@@ -1,0 +1,48 @@
+# Git ignore file for Python projects
+# https://github.com/github/gitignore/blob/main/Python.gitignore
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+
+# Environments
+.env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PyCharm
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Keyhole Markup Language Files
+kml_files/*
+!kml_files/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+analysis_logs/*
+!analysis_logs/.gitkeep
+cyt_security.log
+
+# Reports
+reports/*
+!reports/.gitkeep
+surveillance_reports/*
+!surveillance_reports/.gitkeep
+
+# Secure credentials
+secure_credentials/*
+!secure_credentials/.gitkeep
+
+# Kismet database
+*.kismet
+*.kismet-journal
