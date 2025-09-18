@@ -4,7 +4,7 @@ Secure ignore list loader - replaces dangerous exec() calls
 import json
 import pathlib
 import re
-from typing import List, Optional
+from typing import List
 import logging
 from input_validation import InputValidator
 

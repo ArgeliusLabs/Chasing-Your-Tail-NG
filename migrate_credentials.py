@@ -5,7 +5,6 @@ Migrates API keys from insecure config.json to encrypted storage
 """
 import json
 import sys
-import os
 from pathlib import Path
 from secure_credentials import SecureCredentialManager
 

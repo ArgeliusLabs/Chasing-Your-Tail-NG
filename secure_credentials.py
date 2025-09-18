@@ -170,7 +170,7 @@ class SecureCredentialManager:
         return self.get_credential('wigle', 'encoded_token')
 
 
-def secure_config_loader(config_path: str = 'config.json') -> Dict[str, Any]:
+def secure_config_loader(config_path: str = 'config.json') -> tuple[Any, SecureCredentialManager]:
     """
     Load configuration with secure credential handling
     Automatically migrates insecure credentials to secure storage
@@ -206,7 +206,7 @@ def secure_config_loader(config_path: str = 'config.json') -> Dict[str, Any]:
     return config, cred_manager
 
 
-def get_environment_credentials() -> Dict[str, str]:
+def get_environment_credentials() -> Dict[str, str | None]:
     """Get credentials from environment variables (for CI/CD)"""
     return {
         'wigle_token': os.getenv('WIGLE_API_TOKEN'),

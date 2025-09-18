@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-import json
 import pathlib
 import glob
 import re
 from datetime import datetime
 import requests
-import sqlite3
 import argparse
 
 # Load config with secure credentials

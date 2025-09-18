@@ -10,9 +10,9 @@ import logging
 import os
 import time
 from datetime import datetime
-from pathlib import Path
+from typing import List, Optional
 
-from surveillance_detector import SurveillanceDetector, load_appearances_from_kismet
+from surveillance_detector import SurveillanceDetector, SuspiciousDevice, load_appearances_from_kismet
 from gps_tracker import GPSTracker, KMLExporter, simulate_gps_data
 from secure_credentials import secure_config_loader
 
@@ -44,8 +44,8 @@ class SurveillanceAnalyzer:
         # Analysis settings
         self.analysis_window_hours = 24  # Analyze last 24 hours by default
         
-    def analyze_kismet_data(self, kismet_db_path: str = None, 
-                          gps_data: list = None) -> dict:
+    def analyze_kismet_data(self, kismet_db_path: Optional[str | list] = None, 
+                          gps_data: Optional[list] = None)  -> dict[str, int | str | List[SuspiciousDevice] | None]:
         """Perform complete surveillance analysis on Kismet data"""
         
         print("🔍 Starting Surveillance Analysis...")
@@ -107,6 +107,9 @@ class SurveillanceAnalyzer:
                 
                 for db_file in db_files_to_process:
                     try:
+                        if db_file is None:
+                            raise Exception("❌ Invalid database file")
+                        
                         conn = sqlite3.connect(db_file)
                         cursor = conn.cursor()
                         
@@ -126,7 +129,7 @@ class SurveillanceAnalyzer:
                             all_gps_coords.extend(db_coords)
                         
                     except Exception as e:
-                        print(f"   ❌ Error reading {os.path.basename(db_file)}: {e}")
+                        print(f"   ❌ Error reading {os.path.basename(str(db_file))}: {e}")
                         continue
                 
                 if all_gps_coords:
@@ -171,14 +174,18 @@ class SurveillanceAnalyzer:
             # Load devices from all databases, associating them with GPS locations
             primary_location = "Location_1"  # Use the first/primary location
             for db_file in db_files_to_process:
+                if db_file is None:
+                    raise Exception("❌ Invalid database file")
                 db_count = self._load_appearances_with_gps(db_file, primary_location)
                 print(f"   📁 {os.path.basename(db_file)}: {db_count} device appearances")
                 total_count += db_count
         else:
             # Load from all databases without GPS correlation
             for db_file in db_files_to_process:
+                if db_file is None:
+                    raise Exception("❌ Invalid database file")
                 db_count = load_appearances_from_kismet(db_file, self.detector, "unknown_location")
-                print(f"   📁 {os.path.basename(db_file)}: {db_count} device appearances")
+                print(f"   📁 {os.path.basename(str(db_file))}: {db_count} device appearances")
                 total_count += db_count
         
         print(f"✅ Total device appearances loaded: {total_count:,}")

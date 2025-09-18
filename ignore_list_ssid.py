@@ -1,1 +1,1 @@
-non_alert_ssid_list = ['CR-Guest-Wireless', 'gst02', 'Platinum Reserve', 'AG2F', 'Platinum Reserve']
+non_alert_ssid_list = []
