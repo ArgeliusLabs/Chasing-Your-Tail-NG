@@ -622,9 +622,19 @@ class TailDetector:
     def _get_mac_idle_time(self) -> float:
         """Use ioreg to get macOS system idle time in seconds."""
         try:
-            cmd = "ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF/1000000000; exit}'"
-            out = subprocess.check_output(cmd, shell=True).decode().strip()
-            return float(out) if out else 0.0
+            # No shell=True — pipe manually between two subprocesses
+            ioreg = subprocess.Popen(
+                ["ioreg", "-c", "IOHIDSystem"],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+            )
+            awk = subprocess.Popen(
+                ["awk", "/HIDIdleTime/ {print $NF/1000000000; exit}"],
+                stdin=ioreg.stdout, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+            )
+            ioreg.stdout.close()
+            out, _ = awk.communicate(timeout=5)
+            result = out.decode().strip()
+            return float(result) if result else 0.0
         except Exception:
             return 0.0
 

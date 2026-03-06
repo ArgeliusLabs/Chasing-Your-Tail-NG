@@ -8,14 +8,14 @@ import os
 import queue
 import threading
 import time
-import os
 import stat
-import json
+import secrets
 import platform
 import psutil
 from fpdf import FPDF
 from datetime import datetime
-from flask import Flask, jsonify, render_template, request, Response, stream_with_context
+from functools import wraps
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context, session
 from flask_cors import CORS
 
 from tail_detector import TailDetector, get_recent_alerts
@@ -23,6 +23,42 @@ from tail_detector import TailDetector, get_recent_alerts
 # ──────────────────────────────────────────────
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 app = Flask(__name__)
+
+# ── Auth configuration ─────────────────────────
+# Set CYT_SECRET_KEY env var for a stable key, or one is generated per-run
+app.secret_key = os.environ.get("CYT_SECRET_KEY") or secrets.token_hex(32)
+
+# PIN: set CYT_PIN env var (recommended), fallback to config.json "ui_pin", fallback to generated
+def _load_pin() -> str:
+    if os.environ.get("CYT_PIN"):
+        return os.environ["CYT_PIN"]
+    try:
+        with open(CONFIG_PATH) as f:
+            cfg = json.load(f)
+        pin = cfg.get("ui_pin", "")
+        if pin:
+            return str(pin)
+    except Exception:
+        pass
+    generated = secrets.token_hex(4)  # 8-char hex PIN
+    print(f"\n🔐 SentinelWatch PIN (save this): {generated}\n")
+    return generated
+
+UI_PIN = _load_pin()
+
+def login_required(f):
+    """Decorator: require valid session PIN for all routes."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("authenticated"):
+            # Allow Bearer token as alternative (for API clients)
+            auth = request.headers.get("Authorization", "")
+            if auth.startswith("Bearer ") and secrets.compare_digest(auth[7:], UI_PIN):
+                return f(*args, **kwargs)
+            return jsonify({"error": "Unauthorized — POST /api/login with {\"pin\": \"...\"} first"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 CORS(app)
 
 # Global detector instance
@@ -113,12 +149,30 @@ def _kismet_status() -> dict:
 #  ROUTES
 # ══════════════════════════════════════════════
 
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    """Authenticate with PIN to get a session cookie."""
+    data = request.get_json(force=True) or {}
+    pin = str(data.get("pin", "")).strip()
+    if secrets.compare_digest(pin, UI_PIN):
+        session["authenticated"] = True
+        session.permanent = True
+        return jsonify({"ok": True, "message": "Authenticated"})
+    return jsonify({"error": "Invalid PIN"}), 401
+
+@app.route("/api/logout", methods=["POST"])
+def api_logout():
+    session.clear()
+    return jsonify({"ok": True})
+
 @app.route("/")
+@login_required
 def index():
     return render_template("index.html")
 
 
 @app.route("/api/status")
+@login_required
 def api_status():
     kismet = _kismet_status()
     return jsonify({
@@ -134,6 +188,7 @@ def api_status():
 
 
 @app.route("/api/whitelist")
+@login_required
 def api_whitelist():
     return jsonify({
         "devices": [p.to_dict() | {"display_name": p.display_name(),
@@ -144,6 +199,7 @@ def api_whitelist():
 
 
 @app.route("/api/top_visitors")
+@login_required
 def api_top_visitors():
     limit = int(request.args.get("limit", 20))
     return jsonify({
@@ -154,6 +210,7 @@ def api_top_visitors():
 
 
 @app.route("/api/persons")
+@login_required
 def api_persons():
     limit = int(request.args.get("limit", 20))
     return jsonify({
@@ -164,6 +221,7 @@ def api_persons():
 
 
 @app.route("/api/watchlist")
+@login_required
 def api_watchlist():
     return jsonify({
         "watchlist": [p.to_dict() | {"display_name": p.display_name()}
@@ -172,12 +230,14 @@ def api_watchlist():
 
 
 @app.route("/api/alerts")
+@login_required
 def api_alerts():
     limit = int(request.args.get("limit", 50))
     return jsonify({"alerts": get_recent_alerts(limit)})
 
 
 @app.route("/api/label", methods=["POST"])
+@login_required
 def api_label():
     data = request.get_json(force=True)
     mac = data.get("mac", "").strip()
@@ -193,6 +253,7 @@ def api_label():
 
 
 @app.route("/api/watchlist/add", methods=["POST"])
+@login_required
 def api_watchlist_add():
     data = request.get_json(force=True)
     mac = data.get("mac", "").strip()
@@ -203,6 +264,7 @@ def api_watchlist_add():
 
 
 @app.route("/api/watchlist/remove", methods=["POST"])
+@login_required
 def api_watchlist_remove():
     data = request.get_json(force=True)
     mac = data.get("mac", "").strip()
@@ -213,6 +275,7 @@ def api_watchlist_remove():
 
 
 @app.route("/api/mode", methods=["POST"])
+@login_required
 def api_mode():
     data = request.get_json(force=True)
     mode = data.get("mode", "").upper()
@@ -238,6 +301,7 @@ def api_mode():
 
 
 @app.route("/api/notifications/config", methods=["GET", "POST"])
+@login_required
 def api_notifications_config():
     """Get or update notification settings (Resend / Twilio)."""
     with open(CONFIG_PATH) as f:
@@ -263,6 +327,7 @@ def api_notifications_config():
 
 
 @app.route("/api/export/csv")
+@login_required
 def api_export_csv():
     filename = f"data/sentinel_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     detector.export_to_csv(filename)
@@ -270,6 +335,7 @@ def api_export_csv():
 
 
 @app.route("/api/export/json")
+@login_required
 def api_export_json():
     filename = f"data/sentinel_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     detector.export_to_json(filename)
@@ -277,6 +343,7 @@ def api_export_json():
 
 
 @app.route("/api/export/pdf")
+@login_required
 def api_export_pdf():
     """Generate a high-fidelity PDF Intelligence Report."""
     try:
@@ -322,6 +389,7 @@ def api_export_pdf():
 
 # ─── SSE Stream ───────────────────────────────
 @app.route("/api/stream")
+@login_required
 def api_stream():
     q: queue.Queue = queue.Queue(maxsize=50)
     with _sse_lock:
@@ -359,6 +427,7 @@ def api_stream():
 
 # ──────────────────────────────────────────────
 @app.route("/api/stalkers")
+@login_required
 def api_stalkers():
     """Multi-location stalker ranking from GPS-correlated Kismet data."""
     try:
@@ -375,6 +444,7 @@ def api_stalkers():
 
 
 @app.route("/api/checkpoint", methods=["POST"])
+@login_required
 def api_add_checkpoint():
     """Add a GPS checkpoint for multi-location tracking."""
     data = request.get_json(force=True)
@@ -392,6 +462,7 @@ def api_add_checkpoint():
 
 
 @app.route("/api/sys_stats")
+@login_required
 def api_sys_stats():
     """Return system health metrics (CPU, RAM, Disk, Temp)."""
     try:
@@ -420,6 +491,7 @@ def api_sys_stats():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/create_launcher", methods=["POST"])
+@login_required
 def api_create_launcher():
     """Create a double-clickable macOS .command desktop launcher."""
     import stat
