@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.env
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project output directories (keep .gitkeep)
+logs/*
+!logs/.gitkeep
+kml_files/*
+!kml_files/.gitkeep
+reports/*
+!reports/.gitkeep
+surveillance_reports/*
+!surveillance_reports/.gitkeep
+analysis_logs/*
+!analysis_logs/.gitkeep
+
+# Secure credentials (NEVER commit!)
+secure_credentials/*
+!secure_credentials/.gitkeep
+
+# Kismet databases and logs
+*.kismet
+*.kismet-journal
+kismet_logs/
+
+# Security logs
+cyt_security.log
+*.log
+
+# Encrypted files
+*.encrypted
+*.key
+
+# Monitoring
+monitor.pid
+
+# Tox / test coverage
+.tox/
+htmlcov/
+.coverage

@@ -1,0 +1,21 @@
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+skip-string-normalization = false
+extend-exclude = "^.venv/"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["chasing_your_tail", "cyt_gui", "surveillance_analyzer", "surveillance_detector", "gps_tracker", "probe_analyzer"]
+known_third_party = ["kismet", "wigle"]
+extend_skip = [".venv"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv", ".git", "__pycache__", "legacy", "old_scripts", "docs_archive"]
+skips = ["B101"]
+# B101 = assert used - acceptable in dev/test code
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"

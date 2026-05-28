@@ -1,0 +1,18 @@
+# Dev tools - install with: pip install -r requirements-dev.txt -r requirements.txt
+
+# Formatting
+black>=23.0.0
+isort>=5.12.0
+
+# Linting
+flake8>=6.0.0
+
+# Security scanning
+bandit>=1.7.0
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=5.0.0
+
+# Task runner
+tox>=4.0.0
