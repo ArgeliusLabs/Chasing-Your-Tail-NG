@@ -1,0 +1,21 @@
+# Example systemd service for running CYT monitor on Raspberry Pi
+# Copy to /etc/systemd/system/cyt.service and edit paths as needed
+
+[Unit]
+Description=Chasing Your Tail (CYT) monitor
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/cyt
+Environment="PATH=/opt/cyt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+# If using env file:
+# EnvironmentFile=/opt/cyt/.env
+ExecStart=/opt/cyt/venv/bin/python /opt/cyt/chasing_your_tail.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
