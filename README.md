@@ -2,7 +2,7 @@
 
 CYT reports recurring nearby **advertised radio identifiers**. Modern phones often send wildcard probes and change addresses. CYT counts observed transmissions without requiring remembered network names and keeps changing addresses separate.
 
-This development branch now includes a Kismet packet adapter, persistent storage, a CLI, and a local browser dashboard. It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. The original scripts remain separate. Follow [PR #38](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/38) and the [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37).
+The repository now includes a Kismet packet adapter, persistent storage, a CLI, and a local browser dashboard, merged in [PR #38](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/38). It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. The original scripts remain separate. Follow the [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) for the remaining work.
 
 ## Try it without hardware
 
@@ -63,7 +63,7 @@ The output labels are `observed`, `recurring`, and `recurring_across_locations`.
 | [Earlier core design](docs/REFRACTOR_NOTES.md) | Original replay milestone and migration rationale |
 | [Rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) | Community requirements and remaining release gates |
 
-The tests use synthetic captures, including active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, and HTTP behavior. These tests do not measure RF detection performance. The GitHub workflow runs the core suite and installation smoke test on Windows/Linux with Python 3.10/3.13; inspect the PR checks for actual results.
+All 53 tests and the installation smoke checks passed on Windows and Linux with Python 3.10 and 3.13 for the merged runtime ([CI run](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/runs/41714526125)). The tests use synthetic captures, including active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, and HTTP behavior. They do not measure RF detection performance.
 
 ## Legacy code and contributions
 
