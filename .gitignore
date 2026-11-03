@@ -13,6 +13,13 @@ htmlcov/
 .env
 .env.*
 !.env.example
+.envrc
+.idea/
+.vscode/
+env/
+ENV/
+env.bak/
+venv.bak/
 *.kismet
 *.kismet-*
 *.pcap
@@ -27,6 +34,22 @@ htmlcov/
 wigle_credentials*
 ignore_mac_list.json
 ignore_ssid_list.json
+ignore_lists/*.json
+ignore_lists/*.py
+# Preserve legacy directory placeholders, while excluding generated content.
+kml_files/*
+!kml_files/gitkeep.keep
+logs/*
+!logs/gitkeep.keep
+analysis_logs/*
+!analysis_logs/gitkeep.keep
+reports/*
+!reports/gitkeep.keep
+surveillance_reports/*
+!surveillance_reports/gitkeep.keep
+secure_credentials/*
+!secure_credentials/gitkeep.keep
+demo-observations*.jsonl
 .DS_Store
 Thumbs.db
 .review-data/

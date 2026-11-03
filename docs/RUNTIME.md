@@ -1,6 +1,6 @@
 # Experimental runtime: installation and operation
 
-This guide describes the `cyt_core` runtime on the development branch. Python 3.10+ is required. The core has no third-party runtime dependencies. The legacy scripts and `requirements.txt` are a separate application.
+This guide describes the experimental `cyt_core` runtime merged in PR #38. Python 3.10+ is required. The core has no third-party runtime dependencies. The legacy scripts and `requirements.txt` are a separate application.
 
 ## Install or run from source
 
@@ -101,6 +101,6 @@ Then use the same local URL on the viewing computer. This is a local diagnostic 
 
 ## Validation and remaining release gates
 
-The suite covers synthetic packet parsing, source immutability, live WAL append, restart, capture copy/rotation, conflicting input, transactional failure, concurrent collectors, retention, exact windows, persisted exclusions, CLI follow behavior, local HTTP restrictions, and existing recurrence/GPS rules. Package installation and bundled dashboard assets are smoke-tested separately.
+All 53 tests and installed-command smoke checks passed on Windows/Linux with Python 3.10/3.13 in [the runtime CI run](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/runs/41714526125). The suite covers synthetic packet parsing, source immutability, live WAL append, restart, capture copy/rotation, conflicting input, transactional failure, concurrent collectors, retention, exact windows, persisted exclusions, CLI follow behavior, local HTTP restrictions, and existing recurrence/GPS rules. A local isolated installation check confirmed bundled dashboard assets; a browser check confirmed rendering and window selection without console warnings/errors.
 
 Before a replacement release: test real Kismet files and capture hardware, actual receiver fix provenance, Pi installation/service behavior, endurance/storage costs, Pager firmware integration and display, and BLE capture. See the [field plan](FIELD_VALIDATION_PLAN.md). The available code does not establish measured detection accuracy, reliable person identification, or a preconfigured hardware product ready to sell.
