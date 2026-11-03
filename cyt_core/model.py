@@ -48,6 +48,9 @@ class Observation:
     rssi_dbm: float | None = None
     position: Position | None = None
     address_type: str = "unknown"
+    ssid_hex: str | None = None
+    source_id: str | None = None
+    event_id: str | None = None
 
     def __post_init__(self):
         if not all(isinstance(s, str) and s.strip() for s in (self.session, self.observer)):
@@ -67,6 +70,18 @@ class Observation:
             raise ValueError("decoded UTF-8 SSID exceeds 32 bytes")
         if self.protocol != "wifi" and self.ssid is not None:
             raise ValueError("BLE observation cannot carry a Wi-Fi SSID")
+        if self.ssid_hex is not None:
+            if self.protocol != "wifi" or not isinstance(self.ssid_hex, str) or not re.fullmatch(r"(?:[0-9a-fA-F]{2}){0,32}", self.ssid_hex):
+                raise ValueError("ssid_hex must encode at most 32 Wi-Fi SSID bytes")
+            object.__setattr__(self, "ssid_hex", self.ssid_hex.lower())
+            if self.ssid is not None and self.ssid.encode("utf-8").hex() != self.ssid_hex:
+                raise ValueError("ssid and ssid_hex disagree")
+        if (self.source_id is None) != (self.event_id is None):
+            raise ValueError("source_id and event_id must be supplied together")
+        for name in ("source_id", "event_id"):
+            value = getattr(self, name)
+            if value is not None and (not isinstance(value, str) or not value or len(value) > 256):
+                raise ValueError(f"{name} must be a nonempty string of at most 256 characters")
         if self.rssi_dbm is not None:
             number(self.rssi_dbm, "rssi_dbm")
         if self.position is not None and not isinstance(self.position, Position):
@@ -93,6 +108,8 @@ class Observation:
 
     @property
     def event_key(self):
+        if self.source_id is not None:
+            return (self.session, self.observer, self.source_id, self.event_id)
         # Re-polling an unchanged device summary must not create a new sighting.
         return (*self.key, self.observed_at, self.kind)
 

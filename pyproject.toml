@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chasing-your-tail-core"
+version = "0.2.0a1"
+description = "Passive observation storage and recurrence reports for CYT"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.scripts]
+cyt = "cyt_core.__main__:main"
+
+[tool.setuptools]
+packages = ["cyt_core"]
+
+[tool.setuptools.package-data]
+cyt_core = ["static/*.html", "static/*.css", "static/*.js"]

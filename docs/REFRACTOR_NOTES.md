@@ -1,5 +1,7 @@
 # CYT observation core implementation and migration
 
+**Historical first-milestone notes:** the offline design below records the initial 25-test prototype. The development branch has since added packet ingestion, SQLite storage, packaging, persistent exclusions, and a local browser. Use [RUNTIME.md](RUNTIME.md) for the current commands, source contract, tests, and limitations. References below to future storage/UI work describe the earlier milestone, not current feature status.
+
 The new `cyt_core` package is an executable design prototype for portable recurrence awareness. It reads UTF-8 JSON Lines and explains repeated advertised identifiers. It uses Python 3.10 or newer and only the standard library. It has no network calls, radios, UI, credential loading, or import-time filesystem writes.
 
 ## Run the prototype

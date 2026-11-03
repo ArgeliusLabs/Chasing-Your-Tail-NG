@@ -1,0 +1,32 @@
+# Keep captures, credentials, generated files, and local lists out of commits.
+# Carries forward the focused artifact-ignore requirement from community PR #8.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+!.env.example
+*.kismet
+*.kismet-*
+*.pcap
+*.pcapng
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.log
+wigle_credentials*
+ignore_mac_list.json
+ignore_ssid_list.json
+.DS_Store
+Thumbs.db
+.review-data/

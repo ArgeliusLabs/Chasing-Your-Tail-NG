@@ -1,4 +1,4 @@
-"""Experimental, offline CYT observation core. No capture or identity inference."""
+"""Experimental CYT observation core. Passive input; no identity inference."""
 
 from .model import Observation, Position, Rules
 from .recurrence import summarize

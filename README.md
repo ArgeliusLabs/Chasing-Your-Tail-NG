@@ -1,57 +1,74 @@
-# Chasing Your Tail — experimental observation core
+# Chasing Your Tail — experimental portable observation runtime
 
-CYT is being rebuilt for portable awareness of recurring nearby radios. This development branch publishes the first executable core, its tests, and the research behind the redesign.
+CYT reports recurring nearby **advertised radio identifiers**. Modern phones often send wildcard probes and change addresses. CYT counts observed transmissions without requiring remembered network names and keeps changing addresses separate.
 
-**This is an offline prototype, not a complete replacement for the legacy application.** It reads supplied observations. Live Kismet capture, persistent storage, GPS ingestion, the interface, and Pi/Pager deployment still need implementation and validation. Progress and retained community reports are tracked in [issue #37](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37).
+This development branch now includes a Kismet packet adapter, persistent storage, a CLI, and a local browser dashboard. It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. The original scripts remain separate. Follow [PR #38](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/38) and the [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37).
 
-## Run the prototype
+## Try it without hardware
 
-Use Python 3.10 or newer from the repository root. The core and its tests use only the Python standard library.
+Python 3.10 or newer is required. The runtime and tests use only the standard library. Run these commands from the repository root:
 
 ```console
 python -B -m unittest discover -s tests -v
-python -B -m cyt_core research/example-route.jsonl --at 1200
-python -B -m cyt_core research/example-route.jsonl --at 1200 --ignore wifi,02:00:00:00:00:01
+python -B -m cyt_core replay research/example-route.jsonl --at 1200
+python -B research/make_demo.py --output demo-observations.jsonl
+python -B -m cyt_core import-jsonl demo-observations.jsonl --db demo.sqlite3
+python -B -m cyt_core serve --db demo.sqlite3
 ```
 
-The example is synthetic. It reports one advertised identifier observed at three separated observer positions. The final command excludes that identifier. No radios, network services, WiGLE credentials, or real route data are needed.
+Open **http://127.0.0.1:8765**. The generated observations are labeled `synthetic-demo` and use current timestamps. The fixed replay fixture uses old timestamps for deterministic tests. The demo generator refuses to overwrite an existing file; use a new output name for another demo. Keep demo and real captures in separate stores.
 
-## What works today
+No WiGLE account, API credentials, desktop toolkit, or network connection is needed for this demo. Stop the server with Ctrl+C. For an installed `cyt` command, create a virtual environment and run `python -m pip install --no-deps .`; see [setup and operation](docs/RUNTIME.md).
 
-- Validate and replay Wi-Fi/BLE observation records, including wildcard probes.
-- Report recurrence of the same advertised address within a session and observer scope.
-- Reject conflicting duplicates and avoid counting identical reimports as new sightings.
-- Use only sufficiently fresh, accurate GPS fixes supplied with observations.
-- Preserve named SSIDs as data and keep changed addresses separate.
-- Produce structured JSON with the observations supporting each result.
+## Read a Kismet capture
 
-The output labels are `observed`, `recurring`, and `recurring_across_locations`. Locations describe where the observer heard a transmission; they do not establish the transmitter's movement. Recurrence is not proof of a person's identity, intent, or following. No measured detection-accuracy claim is made.
-
-## Development and validation
-
-| Resource | Contents |
-| --- | --- |
-| [Implementation notes](docs/REFRACTOR_NOTES.md) | Observation contract, defaults, limitations, and remaining live work |
-| [Capability assessment](docs/CYT_2026_ASSESSMENT.md) | Probe limitations, legacy defects, hardware feasibility, and product direction |
-| [Field validation plan](docs/FIELD_VALIDATION_PLAN.md) | Radio, GPS, route, nuisance-alert, and endurance checks |
-| [Rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) | Community requirements and issue/PR dispositions |
-
-All 25 behavioral and CLI tests passed on Python 3.13.11 on Windows. These are software checks with synthetic data, not hardware or RF validation. The replay CLI loads its fixture into memory; a bounded persistent store is still required for live operation.
-
-## Legacy baseline
-
-The original scripts are retained so the audit remains reproducible against commit `89c88be`. They do not invoke the new core. Their earlier surveillance/accuracy claims are not supported by the prototype or the audit.
-
-The separate baseline reproduction script imports the legacy analyzer and requires its `cryptography` dependency:
+The adapter targets **Kismet database schema v11**, based on `kismet-2026-10-R1`, with packet logging enabled. Kismet must already be configured and capturing; CYT does not configure radios or start Kismet.
 
 ```console
-python -B research/reproduce_ng_findings.py
+python -B -m cyt_core ingest /path/to/capture.kismet --db cyt.sqlite3 --session trip-001 --observer pi-01
+python -B -m cyt_core report --db cyt.sqlite3 --window-seconds 1200
+python -B -m cyt_core status --db cyt.sqlite3
 ```
 
-Those checks reproduce old defects; they are not the replacement's acceptance tests. Historical setup instructions remain available in the [baseline README](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/blob/89c88be994cfc4ea2f7e151b7c5f0f4ac9d9ca5a/README.md).
+For a growing capture directory, run this collector in one terminal and the dashboard in another:
 
-## Contributions
+```console
+python -B -m cyt_core ingest "/path/to/captures/*.kismet" --db cyt.sqlite3 --session trip-001 --observer pi-01 --follow
+python -B -m cyt_core serve --db cyt.sqlite3
+```
 
-Small changes with replayable examples are welcome. Existing reports remain open until their behavior is implemented and verified or explicitly deferred with a linked rationale. See [#37](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) before starting a larger UI, collector, or deployment change.
+Use paths for your machine. Quote the glob so newly rotated files can be discovered. Reuse the session name when restarting the same trip; use a new name for a new trip. The dashboard binds only to `127.0.0.1` and offers read-only access. An SSH tunnel can provide access from another computer; see the runtime guide.
+
+## What this version does
+
+- Reads supported Wi-Fi probe requests, beacons, and data headers from packet records, using their source timestamps.
+- Preserves empty and binary SSIDs. Named probe strings remain optional evidence.
+- Commits observations and ingestion checkpoints together. Restarts and unchanged inputs do not manufacture sightings.
+- Follows growing and rotated captures; reports missing, unsupported, malformed, and stale input.
+- Stores observations in a separate SQLite database, with a configurable row cap and follow-mode age retention.
+- Persists normalized known-address exclusions through `cyt known` commands.
+- Produces JSON reports and JSONL exports; displays results in a small local dashboard.
+
+The output labels are `observed`, `recurring`, and `recurring_across_locations`. Positions describe where the observer heard a transmission. Recurrence does not prove device identity, a person's identity, intent, or following. An empty display does not establish safety or complete capture coverage.
+
+**GPS and BLE:** validated positions and BLE observations can be supplied through JSONL. The Kismet adapter currently ingests Wi-Fi packets only and supplies no qualified GPS fixes: its packet table lacks the fix time and accuracy needed by CYT's route rules. Live GPS integration, BLE capture, and Pager deployment remain work to do.
+
+## Development and evidence
+
+| Resource | Purpose |
+| --- | --- |
+| [Runtime guide](docs/RUNTIME.md) | Installation, commands, storage, source contract, troubleshooting, and limits |
+| [Capability assessment](docs/CYT_2026_ASSESSMENT.md) | Phone privacy behavior, legacy audit, hardware feasibility, and product direction |
+| [Field validation plan](docs/FIELD_VALIDATION_PLAN.md) | Radio, GPS, route, nuisance-alert, and endurance checks |
+| [Earlier core design](docs/REFRACTOR_NOTES.md) | Original replay milestone and migration rationale |
+| [Rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) | Community requirements and remaining release gates |
+
+The tests use synthetic captures, including active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, and HTTP behavior. These tests do not measure RF detection performance. The GitHub workflow runs the core suite and installation smoke test on Windows/Linux with Python 3.10/3.13; inspect the PR checks for actual results.
+
+## Legacy code and contributions
+
+The original scripts remain for migration and audit reproducibility; they do not call this runtime. The old `requirements.txt` belongs to those scripts. The separate `research/reproduce_ng_findings.py` reproduces legacy defects and requires the legacy `cryptography` dependency. It is not the new runtime's acceptance suite.
+
+Community reports informed the rewrite, including the ignore-file proposal in [PR #8](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/8). Small changes with replayable examples are welcome. Existing issues close when their supported behavior is delivered and verified or explicitly deferred with a rationale. See the tracker before beginning a second UI or collector implementation.
 
 Released under the [MIT License](LICENSE).

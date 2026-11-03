@@ -1,5 +1,6 @@
 """Explain recurrence of observed addresses without assigning threat probabilities."""
 from collections import defaultdict
+from dataclasses import asdict
 import math
 
 from .model import Rules, address, number
@@ -55,7 +56,7 @@ def summarize(observations, *, at, rules=None, ignored=()):
                 continue
             valid_fixes += 1
             # Require separation beyond the stated uncertainty on both fixes.
-            if all(distance_m(pos, other) > rules.separation_m + pos.accuracy_m + other.accuracy_m
+            if len(anchors) < max(32, rules.min_locations) and all(distance_m(pos, other) > rules.separation_m + pos.accuracy_m + other.accuracy_m
                    for other in anchors):
                 anchors.append(pos)
         recurring = len(buckets) >= rules.min_buckets and span >= rules.min_span_seconds
@@ -68,14 +69,17 @@ def summarize(observations, *, at, rules=None, ignored=()):
             "state": level, "observations": len(events), "time_buckets": len(buckets),
             "first_observed_at": events[0].observed_at, "last_observed_at": events[-1].observed_at,
             "span_seconds": span, "distinct_observer_locations": len(anchors),
+            "observer_location_count_capped": len(anchors) == max(32, rules.min_locations),
             "observations_with_usable_position": valid_fixes,
             "observation_kinds": sorted({e.kind for e in events}),
             "directed_ssids": sorted({e.ssid for e in events if e.kind == "probe" and e.ssid}),
+            "directed_ssid_hex": sorted({e.ssid_hex for e in events if e.kind == "probe" and e.ssid_hex}),
             "wildcard_probes": sum(e.kind == "probe" and e.ssid == "" for e in events),
             "evidence": f"Same advertised address in {len(buckets)} time bins; {len(anchors)} separated observer locations.",
         })
     return {
         "schema_version": 1, "analysis_time": at, "window_seconds": rules.window_seconds,
+        "rules": asdict(rules),
         "observed_identifiers": len(results), "excluded": excluded, "results": results,
-        "interpretation": "Address recurrence is not proof of device identity, a person, or following. Capture coverage is not measured by this offline prototype.",
+        "interpretation": "Address recurrence is not proof of device identity, a person, or following. Capture coverage is not measured; missing observations do not mean an area is clear.",
     }
