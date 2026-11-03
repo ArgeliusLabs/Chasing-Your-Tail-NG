@@ -1,230 +1,74 @@
-# Chasing Your Tail (CYT)
+# Chasing Your Tail — experimental portable observation runtime
 
-A comprehensive Wi-Fi probe request analyzer that monitors and tracks wireless devices by analyzing their probe requests. The system integrates with Kismet for packet capture and WiGLE API for SSID geolocation analysis, featuring advanced surveillance detection capabilities.
+CYT reports recurring nearby **advertised radio identifiers**. Modern phones often send wildcard probes and change addresses. CYT counts observed transmissions without requiring remembered network names and keeps changing addresses separate.
 
-## 🚨 Security Notice
+This development branch now includes a Kismet packet adapter, persistent storage, a CLI, and a local browser dashboard. It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. The original scripts remain separate. Follow [PR #38](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/38) and the [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37).
 
-This project has been security-hardened to eliminate critical vulnerabilities:
-- **SQL injection prevention** with parameterized queries
-- **Encrypted credential management** for API keys
-- **Input validation** and sanitization
-- **Secure ignore list loading** (no more `exec()` calls)
+## Try it without hardware
 
-**⚠️ REQUIRED: Run `python3 migrate_credentials.py` before first use to secure your API keys!**
+Python 3.10 or newer is required. The runtime and tests use only the standard library. Run these commands from the repository root:
 
-## Features
-
-- **Real-time Wi-Fi monitoring** with Kismet integration
-- **Advanced surveillance detection** with persistence scoring
-- **🆕 Automatic GPS integration** - extracts coordinates from Bluetooth GPS via Kismet
-- **GPS correlation** and location clustering (100m threshold)
-- **Spectacular KML visualization** for Google Earth with professional styling and interactive content
-- **Multi-format reporting** - Markdown, HTML (with pandoc), and KML outputs
-- **Time-window tracking** (5, 10, 15, 20 minute windows)
-- **WiGLE API integration** for SSID geolocation
-- **Multi-location tracking algorithms** for detecting following behavior
-- **Enhanced GUI interface** with surveillance analysis button
-- **Organized file structure** with dedicated output directories
-- **Comprehensive logging** and analysis tools
-
-## Requirements
-
-- Python 3.6+
-- Kismet wireless packet capture
-- Wi-Fi adapter supporting monitor mode
-- Linux-based system
-- WiGLE API key (optional)
-
-## Installation & Setup
-
-### 1. Install Dependencies
-```bash
-pip3 install -r requirements.txt
+```console
+python -B -m unittest discover -s tests -v
+python -B -m cyt_core replay research/example-route.jsonl --at 1200
+python -B research/make_demo.py --output demo-observations.jsonl
+python -B -m cyt_core import-jsonl demo-observations.jsonl --db demo.sqlite3
+python -B -m cyt_core serve --db demo.sqlite3
 ```
 
-### 2. Security Setup (REQUIRED FIRST TIME)
-```bash
-# Migrate credentials from insecure config.json
-python3 migrate_credentials.py
+Open **http://127.0.0.1:8765**. The generated observations are labeled `synthetic-demo` and use current timestamps. The fixed replay fixture uses old timestamps for deterministic tests. The demo generator refuses to overwrite an existing file; use a new output name for another demo. Keep demo and real captures in separate stores.
 
-# Verify security hardening
-python3 chasing_your_tail.py
-# Should show: "🔒 SECURE MODE: All SQL injection vulnerabilities have been eliminated!"
+No WiGLE account, API credentials, desktop toolkit, or network connection is needed for this demo. Stop the server with Ctrl+C. For an installed `cyt` command, create a virtual environment and run `python -m pip install --no-deps .`; see [setup and operation](docs/RUNTIME.md).
+
+## Read a Kismet capture
+
+The adapter targets **Kismet database schema v11**, based on `kismet-2026-10-R1`, with packet logging enabled. Kismet must already be configured and capturing; CYT does not configure radios or start Kismet.
+
+```console
+python -B -m cyt_core ingest /path/to/capture.kismet --db cyt.sqlite3 --session trip-001 --observer pi-01
+python -B -m cyt_core report --db cyt.sqlite3 --window-seconds 1200
+python -B -m cyt_core status --db cyt.sqlite3
 ```
 
-### 3. Configure System
-Edit `config.json` with your paths and settings:
-- Kismet database path pattern
-- Log and ignore list directories
-- Time window configurations
-- Geographic search boundaries
+For a growing capture directory, run this collector in one terminal and the dashboard in another:
 
-## Usage
-
-### GUI Interface
-```bash
-python3 cyt_gui.py  # Enhanced GUI with surveillance analysis
-```
-**GUI Features:**
-- 🗺️ **Surveillance Analysis** button - GPS-correlated persistence detection with spectacular KML visualization
-- 📈 **Analyze Logs** button - Historical probe request analysis
-- Real-time status monitoring and file generation notifications
-
-### Command Line Monitoring
-```bash
-# Start core monitoring (secure)
-python3 chasing_your_tail.py
-
-# Start Kismet (ONLY working script - July 23, 2025 fix)
-./start_kismet_clean.sh
+```console
+python -B -m cyt_core ingest "/path/to/captures/*.kismet" --db cyt.sqlite3 --session trip-001 --observer pi-01 --follow
+python -B -m cyt_core serve --db cyt.sqlite3
 ```
 
-### Data Analysis
-```bash
-# Analyze collected probe data (past 14 days, local only - default)
-python3 probe_analyzer.py
+Use paths for your machine. Quote the glob so newly rotated files can be discovered. Reuse the session name when restarting the same trip; use a new name for a new trip. The dashboard binds only to `127.0.0.1` and offers read-only access. An SSH tunnel can provide access from another computer; see the runtime guide.
 
-# Analyze past 7 days only
-python3 probe_analyzer.py --days 7
+## What this version does
 
-# Analyze ALL logs (may be slow for large datasets)
-python3 probe_analyzer.py --all-logs
+- Reads supported Wi-Fi probe requests, beacons, and data headers from packet records, using their source timestamps.
+- Preserves empty and binary SSIDs. Named probe strings remain optional evidence.
+- Commits observations and ingestion checkpoints together. Restarts and unchanged inputs do not manufacture sightings.
+- Follows growing and rotated captures; reports missing, unsupported, malformed, and stale input.
+- Stores observations in a separate SQLite database, with a configurable row cap and follow-mode age retention.
+- Persists normalized known-address exclusions through `cyt known` commands.
+- Produces JSON reports and JSONL exports; displays results in a small local dashboard.
 
-# Analyze WITH WiGLE API calls (consumes API credits!)
-python3 probe_analyzer.py --wigle
-```
+The output labels are `observed`, `recurring`, and `recurring_across_locations`. Positions describe where the observer heard a transmission. Recurrence does not prove device identity, a person's identity, intent, or following. An empty display does not establish safety or complete capture coverage.
 
-### Surveillance Detection & Advanced Visualization
-```bash
-# 🆕 NEW: Automatic GPS extraction with spectacular KML visualization
-python3 surveillance_analyzer.py
+**GPS and BLE:** validated positions and BLE observations can be supplied through JSONL. The Kismet adapter currently ingests Wi-Fi packets only and supplies no qualified GPS fixes: its packet table lacks the fix time and accuracy needed by CYT's route rules. Live GPS integration, BLE capture, and Pager deployment remain work to do.
 
-# Run analysis with demo GPS data (for testing - uses Phoenix coordinates)
-python3 surveillance_analyzer.py --demo
+## Development and evidence
 
-# Analyze specific Kismet database
-python3 surveillance_analyzer.py --kismet-db /path/to/kismet.db
+| Resource | Purpose |
+| --- | --- |
+| [Runtime guide](docs/RUNTIME.md) | Installation, commands, storage, source contract, troubleshooting, and limits |
+| [Capability assessment](docs/CYT_2026_ASSESSMENT.md) | Phone privacy behavior, legacy audit, hardware feasibility, and product direction |
+| [Field validation plan](docs/FIELD_VALIDATION_PLAN.md) | Radio, GPS, route, nuisance-alert, and endurance checks |
+| [Earlier core design](docs/REFRACTOR_NOTES.md) | Original replay milestone and migration rationale |
+| [Rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) | Community requirements and remaining release gates |
 
-# Focus on stalking detection with high persistence threshold
-python3 surveillance_analyzer.py --stalking-only --min-persistence 0.8
+The tests use synthetic captures, including active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, and HTTP behavior. These tests do not measure RF detection performance. The GitHub workflow runs the core suite and installation smoke test on Windows/Linux with Python 3.10/3.13; inspect the PR checks for actual results.
 
-# Export results to JSON for further analysis
-python3 surveillance_analyzer.py --output-json analysis_results.json
+## Legacy code and contributions
 
-# Analyze with external GPS data from JSON file
-python3 surveillance_analyzer.py --gps-file gps_coordinates.json
-```
+The original scripts remain for migration and audit reproducibility; they do not call this runtime. The old `requirements.txt` belongs to those scripts. The separate `research/reproduce_ng_findings.py` reproduces legacy defects and requires the legacy `cryptography` dependency. It is not the new runtime's acceptance suite.
 
-### Ignore List Management
-```bash
-# Create new ignore lists from current Kismet data
-python3 legacy/create_ignore_list.py  # Moved to legacy folder
-```
-**Note**: Ignore lists are now stored as JSON files in `./ignore_lists/`
+Community reports informed the rewrite, including the ignore-file proposal in [PR #8](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/8). Small changes with replayable examples are welcome. Existing issues close when their supported behavior is delivered and verified or explicitly deferred with a rationale. See the tracker before beginning a second UI or collector implementation.
 
-## Core Components
-
-- **chasing_your_tail.py**: Core monitoring engine with real-time Kismet database queries
-- **cyt_gui.py**: Enhanced Tkinter GUI with surveillance analysis capabilities
-- **surveillance_analyzer.py**: GPS surveillance detection with automatic coordinate extraction and advanced KML visualization
-- **surveillance_detector.py**: Core persistence detection engine for suspicious device patterns
-- **gps_tracker.py**: GPS tracking with location clustering and spectacular Google Earth KML generation
-- **probe_analyzer.py**: Post-processing tool with WiGLE integration
-- **start_kismet_clean.sh**: ONLY working Kismet startup script (July 23, 2025 fix)
-
-### Security Components
-- **secure_database.py**: SQL injection prevention
-- **secure_credentials.py**: Encrypted credential management
-- **secure_ignore_loader.py**: Safe ignore list loading
-- **secure_main_logic.py**: Secure monitoring logic
-- **input_validation.py**: Input sanitization and validation
-- **migrate_credentials.py**: Credential migration tool
-
-## Output Files & Project Structure
-
-### Organized Output Directories
-- **Surveillance Reports**: `./surveillance_reports/surveillance_report_YYYYMMDD_HHMMSS.md` (markdown)
-- **HTML Reports**: `./surveillance_reports/surveillance_report_YYYYMMDD_HHMMSS.html` (styled HTML with pandoc)
-- **KML Visualizations**: `./kml_files/surveillance_analysis_YYYYMMDD_HHMMSS.kml` (spectacular Google Earth files)
-- **CYT Logs**: `./logs/cyt_log_MMDDYY_HHMMSS`
-- **Analysis Logs**: `./analysis_logs/surveillance_analysis.log`
-- **Probe Reports**: `./reports/probe_analysis_report_YYYYMMDD_HHMMSS.txt`
-
-### Configuration & Data
-- **Ignore Lists**: `./ignore_lists/mac_list.json`, `./ignore_lists/ssid_list.json`
-- **Encrypted Credentials**: `./secure_credentials/encrypted_credentials.json`
-
-### Archive Directories (Cleaned July 23, 2025)
-- **old_scripts/**: All broken startup scripts with hanging pkill commands
-- **docs_archive/**: Session notes, old configs, backup files, duplicate logs
-- **legacy/**: Original legacy code archive (pre-security hardening)
-
-## Technical Architecture
-
-### Time Window System
-Maintains four overlapping time windows to detect device persistence:
-- Recent: Past 5 minutes
-- Medium: 5-10 minutes ago
-- Old: 10-15 minutes ago
-- Oldest: 15-20 minutes ago
-
-### Surveillance Detection
-Advanced persistence detection algorithms analyze device behavior patterns:
-- **Temporal Persistence**: Consistent device appearances over time
-- **Location Correlation**: Devices following across multiple locations
-- **Probe Pattern Analysis**: Suspicious SSID probe requests
-- **Timing Analysis**: Unusual appearance patterns
-- **Persistence Scoring**: Weighted scores (0-1.0) based on combined indicators
-- **Multi-location Tracking**: Specialized algorithms for detecting following behavior
-
-### GPS Integration & Spectacular KML Visualization (Enhanced!)
-- **🆕 Automatic GPS extraction** from Kismet database (Bluetooth GPS support)
-- **Location clustering** with 100m threshold for grouping nearby coordinates
-- **Session management** with timeout handling for location transitions
-- **Device-to-location correlation** links Wi-Fi devices to GPS positions
-- **Professional KML generation** with spectacular Google Earth visualizations featuring:
-  - Color-coded persistence level markers (green/yellow/red)
-  - Device tracking paths showing movement correlation
-  - Rich interactive balloon content with detailed device intelligence
-  - Activity heatmaps and surveillance intensity zones
-  - Temporal analysis overlays for time-based pattern detection
-- **Multi-location tracking** detects devices following across locations with visual tracking paths
-
-## Configuration
-
-All settings are centralized in `config.json`:
-```json
-{
-  "kismet_db_path": "/path/to/kismet/*.kismet",
-  "log_directory": "./logs/",
-  "ignore_lists_directory": "./ignore_lists/",
-  "time_windows": {
-    "recent": 5,
-    "medium": 10,
-    "old": 15,
-    "oldest": 20
-  }
-}
-```
-
-WiGLE API credentials are now securely encrypted in `secure_credentials/encrypted_credentials.json`.
-
-## Security Features
-
-- **Parameterized SQL queries** prevent injection attacks
-- **Encrypted credential storage** protects API keys
-- **Input validation** prevents malicious input
-- **Audit logging** tracks all security events
-- **Safe ignore list loading** eliminates code execution risks
-
-## Author
-
-@matt0177
-
-## License
-
-MIT License
-
-## Disclaimer
-
-This tool is intended for legitimate security research, network administration, and personal safety purposes. Users are responsible for complying with all applicable laws and regulations in their jurisdiction.
+Released under the [MIT License](LICENSE).

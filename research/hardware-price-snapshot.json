@@ -1,0 +1,24 @@
+{
+  "checked_on": "2026-11-03",
+  "storefront": "Hak5 US",
+  "currency": "USD",
+  "price_units_in_source": "cents",
+  "sources": [
+    {
+      "url": "https://shop.hak5.org/products/pager.js",
+      "product": "WiFi Pineapple Pager",
+      "selected_variants": [
+        {"title": "Basic / Black", "price_cents": 30000, "available": true},
+        {"title": "Pro / Black", "price_cents": 33000, "available": true}
+      ]
+    },
+    {
+      "url": "https://shop.hak5.org/products/glytch-gps-mod-for-pager.js",
+      "product": "Glytch GPS Mod for Pager",
+      "selected_variants": [
+        {"title": "Default Title", "price_cents": 6000, "available": false}
+      ]
+    }
+  ],
+  "note": "Public retail data read during this assessment. Tax, shipping, provisioning, support and wholesale terms are excluded. Availability can change."
+}

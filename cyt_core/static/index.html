@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chasing Your Tail</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><main>
+<header><div class="eyebrow">ARGELIUS LABS / EXPERIMENTAL</div><h1>Chasing Your Tail</h1><p class="intro">Nearby radios. Recurring observations. Clear evidence.</p></header>
+<section class="toolbar"><label for="window">Observation window</label><select id="window"><option value="300">5 minutes</option><option value="1200" selected>20 minutes</option><option value="3600">1 hour</option><option value="86400">24 hours</option></select><span id="updated">Connecting…</span></section>
+<p id="error" role="alert" hidden></p>
+<section class="metrics" aria-label="Capture status"><article><span>Capture freshness</span><strong id="freshness">Unknown</strong><small id="age">Waiting for data</small></article><article><span>Identifiers in window</span><strong id="identifiers">—</strong><small>Known addresses excluded</small></article><article><span>Recurring identifiers</span><strong id="recurring">—</strong><small>Same address across time bins</small></article><article><span>Retained observations</span><strong id="stored">—</strong><small>Subject to storage limits</small></article></section>
+<section class="panel"><div class="section-title"><h2>Observed identifiers</h2><span>Refreshes every 5 seconds</span></div><p id="empty" hidden>No observations in this window. Check the collector and capture sources. This is not an “all clear.”</p><div class="scroll"><table id="radios"><thead><tr><th>Advertised address</th><th>Evidence</th><th>Records / bins</th><th>Last observed</th><th>Probe names</th></tr></thead><tbody></tbody></table></div><p id="overflow" hidden></p></section>
+<section class="panel"><h2>Collector diagnostics</h2><p id="diagnostics">Waiting for collector status.</p><ul id="sources"></ul></section>
+<footer><p>Recurrence describes an advertised identifier. It does not prove device identity, a person, intent, or following. Changing addresses stay separate. Capture coverage is unknown.</p><p>The Kismet adapter does not supply qualified GPS fixes. Locations in imported observations describe the observer.</p><p>Local, read-only interface · No WiGLE account required</p></footer>
+</main></body></html>
