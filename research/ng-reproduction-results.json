@@ -1,0 +1,41 @@
+{
+  "empty_ssid": {
+    "device_rows_retained": 1,
+    "probe_rows_returned": 0
+  },
+  "summary_loader": {
+    "appearances_first_import": 1,
+    "after_reimport_same_row": 2
+  },
+  "stale_probe": {
+    "probe_record_time": 100,
+    "reported_probe_time": 1000.0
+  },
+  "stationary_ap": {
+    "score": 1.0,
+    "locations": [
+      "same_place"
+    ]
+  },
+  "empty_dataset_reported_accuracy": 0.95,
+  "gps_correlation": {
+    "device_times": [
+      2000,
+      1000
+    ],
+    "assigned_locations": [
+      "Location_1",
+      "Location_1"
+    ],
+    "gps_times": [
+      9000,
+      9000
+    ]
+  },
+  "lowercase_recurrence_missed": true,
+  "configured_ignore_files_missing": [
+    "mac_list.py",
+    "ssid_list.py"
+  ],
+  "ordinary_apostrophe_ssid_rejected": true
+}

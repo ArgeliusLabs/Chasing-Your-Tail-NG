@@ -1,0 +1,3 @@
+{"session":"synthetic-demo","observer":"pager","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1000,"kind":"probe","ssid":"","position":{"latitude":33.0,"longitude":-112.0,"measured_at":1000,"accuracy_m":5}}
+{"session":"synthetic-demo","observer":"pager","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1100,"kind":"probe","ssid":"","position":{"latitude":33.01,"longitude":-112.0,"measured_at":1100,"accuracy_m":5}}
+{"session":"synthetic-demo","observer":"pager","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1200,"kind":"probe","ssid":"","position":{"latitude":33.02,"longitude":-112.0,"measured_at":1200,"accuracy_m":5}}
