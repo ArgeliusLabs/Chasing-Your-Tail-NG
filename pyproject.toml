@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "chasing-your-tail-core"
 version = "0.2.0a2"
-description = "Passive observation storage and recurrence reports for CYT"
+description = "Portable radio awareness: local observation storage and recurrence reports"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}

@@ -1,8 +1,36 @@
-# Chasing Your Tail — experimental portable observation runtime
+# Chasing Your Tail (CYT)
 
-CYT reports recurring nearby **advertised radio identifiers**. Modern phones often send wildcard probes and change addresses. CYT counts observed transmissions without requiring remembered network names and keeps changing addresses separate.
+**Portable radio awareness. See what keeps showing up along your route.**
 
-The repository includes a Kismet packet adapter, persistent storage, a CLI, a local browser dashboard, and post-trip GPS joins. It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. **The existing Raspberry Pi kit is the first deployment target, followed by Pager.** Read the [current product plan](docs/PRODUCT_PLAN_2026_11.md) and [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37). The original scripts remain separate under the [legacy migration policy](docs/LEGACY.md).
+[![Observation core checks](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/workflows/core-tests.yml/badge.svg)](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/workflows/core-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+CYT is an open-source project from **Argelius Labs** for recording nearby radio transmissions and reviewing which advertised identifiers recur over time and at different points along a trip. The maintained core listens through an existing Kismet capture and keeps the evidence local.
+
+**Status: experimental alpha. Raspberry Pi first; Wi-Fi Pineapple Pager next.** Software checks pass, but real Pi/Pager radio, GPS and battery performance have not been validated. The project does not yet ship a supported hardware appliance.
+
+[Try the demo](#try-it-without-hardware) · [Set up CYT](SETUP.md) · [Roadmap](docs/ROADMAP.md) · [Pager preparation](docs/PAGER_BRINGUP.md) · [Contribute](CONTRIBUTING.md)
+
+## Why CYT is changing
+
+Modern phones often send blank Wi-Fi probes and change their addresses. The old assumption that remembered network names reveal a stable phone identity no longer holds. CYT now works with the transmissions that are actually observable: wildcard probes, hotspot/access-point broadcasts and supported data-frame transmitter headers.
+
+Its useful question is **“Which advertised radio identifiers have I heard again?”** A repeated address can belong to a companion, fixed infrastructure or another nearby emitter. It does not establish a person's identity or prove that someone is following you. GPS marks where **you heard** a transmission, not the other radio's location. A quiet display does not establish that an area is clear.
+
+## What is available
+
+| Capability | Status |
+| --- | --- |
+| Wi-Fi packet ingestion, including blank probes | Available through Kismet database schema v11 |
+| Exact-address recurrence, known-address exclusions and trip exports | Available |
+| Local read-only browser dashboard | Available |
+| Recorded GPS joined to observations after a trip | Available; receiver/time/quality checks required |
+| Live GPS, encounter notifications and dependable Pi operation | Next field milestone |
+| Wi-Fi Pineapple Pager capture adapter, screen and vibration | Planned; hardware validation pending |
+| Passive TPMS tire-sensor reception | Planned experiment; requires an additional radio receiver |
+| Passive Bluetooth collection | Planned; BLE observations can already be imported through JSONL |
+
+The maintained runtime uses Python's standard library. Kismet handles Wi-Fi reception; CYT handles observation storage, recurrence and presentation. Small sensor/platform adapters will feed the same core. [Read the roadmap](docs/ROADMAP.md).
 
 ## Try it without hardware
 
@@ -60,7 +88,9 @@ The output labels are `observed`, `recurring`, and `recurring_across_locations`.
 | Resource | Purpose |
 | --- | --- |
 | [Runtime guide](docs/RUNTIME.md) | Installation, commands, storage, source contract, troubleshooting, and limits |
-| [Current product plan](docs/PRODUCT_PLAN_2026_11.md) | Signal priorities, Pi/Pager milestones, research questions, product and fulfillment decisions |
+| [Roadmap](docs/ROADMAP.md) | Current priorities, TPMS research and the gates before a hardware release |
+| [Pager preparation](docs/PAGER_BRINGUP.md) | What to check when a Pager is connected; current support boundaries |
+| [Detailed product research](docs/PRODUCT_PLAN_2026_11.md) | Pi/Pager feasibility, validation, memory/history constraints and fulfillment options |
 | [GPS replay guide](docs/GPS_REPLAY.md) | Record GPS, reject unusable fixes, join and review a trip |
 | [Software validation](docs/SOFTWARE_VALIDATION_2026_11.md) | Reproducible memory, retention and sustained-ingestion evidence |
 | [Earlier capability assessment](docs/CYT_2026_ASSESSMENT.md) | November 3 legacy audit and original feasibility research |
@@ -74,6 +104,6 @@ The software suite covers synthetic captures, active SQLite WAL writes, restart,
 
 The original scripts remain for migration and audit reproducibility; they do not call this runtime. The old `requirements.txt` belongs to those scripts. The separate `research/reproduce_ng_findings.py` reproduces legacy defects and requires the legacy `cryptography` dependency. It is not the new runtime's acceptance suite.
 
-Community reports informed the rewrite, including the ignore-file proposal in [PR #8](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/8). Small changes with replayable examples are welcome. Existing issues close when their supported behavior is delivered and verified or explicitly deferred with a rationale. See the tracker before beginning a second UI or collector implementation.
+Community reports informed the rewrite, including the ignore-file proposal in [PR #8](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/8). Small changes with replayable examples are welcome. See [contribution guidance](CONTRIBUTING.md) and the [release tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) before starting work. Existing issues close when their supported behavior is delivered and verified or explicitly deferred with a rationale.
 
 Released under the [MIT License](LICENSE).

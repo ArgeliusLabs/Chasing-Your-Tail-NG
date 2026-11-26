@@ -1,4 +1,4 @@
-# CYT setup
+# Chasing Your Tail (CYT) setup
 
 Start with the **experimental observation runtime**. Python 3.10 or newer is required. Development targets the existing Raspberry Pi kit first; a Pager port is a later hardware milestone.
 
@@ -29,6 +29,8 @@ Open `http://127.0.0.1:8765`. For a remote Pi, use the SSH tunnel in the operato
 - [Installation, commands, retention and troubleshooting](docs/RUNTIME.md)
 - [Join an observer GPS log after a trip](docs/GPS_REPLAY.md)
 - [Pi-first product and validation plan](docs/PRODUCT_PLAN_2026_11.md)
+- [Current roadmap and sensor priorities](docs/ROADMAP.md)
+- [Prepare a Pager for hardware evaluation](docs/PAGER_BRINGUP.md)
 - [Legacy migration policy](docs/LEGACY.md)
 
 The root `requirements.txt`, `config.json`, Tkinter UI, WiGLE credentials and `surveillance_*` scripts belong to the historical application. They are not prerequisites for the new runtime. The former BlackHat setup instructions and unsupported detection/security claims remain available in Git history for reference.
