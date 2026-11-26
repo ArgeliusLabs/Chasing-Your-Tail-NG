@@ -1,6 +1,6 @@
 # Experimental runtime: installation and operation
 
-This guide describes the experimental `cyt_core` runtime merged in PR #38. Python 3.10+ is required. The core has no third-party runtime dependencies. The legacy scripts and `requirements.txt` are a separate application.
+This guide describes the experimental `cyt_core` runtime, including the November 26 GPS replay and threshold controls. Python 3.10+ is required. The core has no third-party runtime dependencies. The legacy scripts and `requirements.txt` are a separate application; see the [migration policy](LEGACY.md).
 
 ## Install or run from source
 
@@ -67,15 +67,34 @@ cyt export --db cyt.sqlite3 --since 1000 > observations.jsonl
 
 `--at` is a UTC Unix timestamp in seconds; omitted means now. `--window-seconds` is in seconds, not minutes. The interval includes both endpoints and excludes future observations. The report includes effective rules. Defaults require three 60-second time bins and at least 120 seconds between the first and last observation to call an identifier recurring. This does not link addresses across changes.
 
+Report and replay expose the same rule options:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--window-seconds` | 1200 | Event-time lookback from `--at` |
+| `--bucket-seconds` | 60 | Size of a UTC-aligned occupied time bin |
+| `--min-buckets` | 3 | Required distinct occupied bins |
+| `--min-span-seconds` | 120 | Required first-to-last span, not continuous presence |
+| `--min-locations` | 3 | Required separated observer positions |
+| `--separation-m` | 250 | Separation beyond both fixes' stated errors |
+| `--max-fix-age-seconds` | 5 | Maximum observation/fix time difference |
+| `--max-accuracy-m` | 50 | Maximum estimated position error |
+
+Durations/distances must be finite and positive; counts must be integers of at least two, with `--min-locations` limited to 32 to bound pairwise location comparisons. The JSON report records all effective settings. The browser continues to use the default thresholds and its window selector; changing a CLI invocation does not change browser policy.
+
+For one hour, one day, one week and thirty days use window values `3600`, `86400`, `604800` and `2592000` respectively. A longer query cannot recover pruned events. Follow mode defaults to seven days **and** a 100,000-row cap, either of which may shorten history. Set retention/cap deliberately at collection time or keep bounded trip archives for later replay. Longer windows do not establish identity across address changes or visits months apart. The old `config.json` minute-bucket labels and surveillance-score thresholds do not control this runtime.
+
 Known lists live in the CYT database. Addresses are case-normalized, survive restart, and are reread for every report. They suppress output rather than remove evidence. The explicit `--ignore wifi,MAC` report/replay option provides a temporary exclusion. There is no automatic import or overwrite of legacy personal ignore files. SSID-only exclusion is intentionally absent because unrelated radios can share a network name.
 
 Valid JSONL imports can include `Position` metadata or BLE observations; see the model and fixed replay fixture. Imports are transactional and reject invalid records with a line number. `source_id`/`event_id` must appear together; real adapters should use them to distinguish frames with the same timestamp. Without provenance fields, the original replay key remains session/observer/protocol/address/time/kind and conflicting records fail.
 
-Route evidence requires a qualifying fix mode, timestamp age, accuracy, and separation beyond both fixes' uncertainties. There is no live GPS or BLE collector yet. Observer anchors are capped at at least 32 per identifier to limit pairwise comparisons; `observer_location_count_capped` reports when the count is a lower bound. Coordinates never establish transmitter movement.
+Route evidence requires a qualifying fix mode, timestamp age, accuracy, and separation beyond both fixes' uncertainties. The [post-trip GPS join](GPS_REPLAY.md) can enrich a raw export using a separately recorded gpsd stream; there is no live GPS or BLE collector yet. Observer anchors are capped at 32 per identifier to limit pairwise comparisons; `observer_location_count_capped` reports when the count is a lower bound. Coordinates never establish transmitter movement. Estimated GPS errors are quality indicators, not guaranteed confidence bounds.
 
 ## Storage and health
 
 The default write cap is **100,000 retained observations**. `--max-events` accepts 1–1,000,000. Every committed Kismet batch prunes oldest event-time rows beyond the cap. Follow mode also prunes observations older than **604,800 seconds (seven days)** relative to the computer clock; override with `--retention-seconds`. A dense capture can reach the row cap much sooner. One-shot ingestion and JSONL import apply the row cap without a wall-clock age cutoff, so old captures can be replayed.
+
+Check the actual retained time span, not just the configured age. At 100 accepted rows per second, 10,000 rows hold about 100 seconds, which cannot meet the default 120-second recurrence span. Repetitive beacons can crowd out older evidence. The current engine has no separate long-lived encounter summary; retained-history/compaction work is a release gate for busy scenes and Pager. Increasing the cap also increases report memory. See the [measured software limits](SOFTWARE_VALIDATION_2026_11.md).
 
 Explicit pruning uses `cyt prune --db cyt.sqlite3 --before UNIX_SECONDS`. The checkpoint history survives pruning to prevent reimport from repopulating expired events. SQLite reuses freed pages; it does not necessarily shrink the file. This is a bounded observation count, not an absolute disk quota: source checkpoints and known-list entries remain until the store is retired. Archive/rotate the CYT store between projects as needed. Backup a live store using SQLite-aware tooling, not by assuming the main file contains all WAL updates.
 
@@ -101,6 +120,6 @@ Then use the same local URL on the viewing computer. This is a local diagnostic 
 
 ## Validation and remaining release gates
 
-All 53 tests and installed-command smoke checks passed on Windows/Linux with Python 3.10/3.13 in [the runtime CI run](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/runs/41714526125). The suite covers synthetic packet parsing, source immutability, live WAL append, restart, capture copy/rotation, conflicting input, transactional failure, concurrent collectors, retention, exact windows, persisted exclusions, CLI follow behavior, local HTTP restrictions, and existing recurrence/GPS rules. A local isolated installation check confirmed bundled dashboard assets; a browser check confirmed rendering and window selection without console warnings/errors.
+The suite covers synthetic packet parsing, source immutability, live WAL append, restart, capture copy/rotation, conflicting input, transactional failure, concurrent collectors, retention, exact windows, persisted exclusions, CLI follow behavior, local HTTP restrictions, recurrence counterexamples and GPS joins. The GPS cases include partial epochs, fix loss, device/scope mismatch, ambiguous/backwards clocks, stale/future fixes, quality gates and failed-output cleanup. See [revision-specific CI](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/workflows/core-tests.yml) for Windows/Linux and Python 3.10/3.13 checks. Software tests and synthetic endurance runs do not establish RF accuracy or Pi/Pager battery life.
 
 Before a replacement release: test real Kismet files and capture hardware, actual receiver fix provenance, Pi installation/service behavior, endurance/storage costs, Pager firmware integration and display, and BLE capture. See the [field plan](FIELD_VALIDATION_PLAN.md). The available code does not establish measured detection accuracy, reliable person identification, or a preconfigured hardware product ready to sell.

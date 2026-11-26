@@ -19,9 +19,11 @@ This plan decides whether a portable CYT release is useful and whether its claim
 
 ## Equipment and records
 
-Use a Pager with the intended GPS accessory and a Pi/Kismet reference installation with known compatible receivers. Record firmware, Kismet version and database schema, driver/chipset, enabled bands, channel schedule, device OS/model, phone settings, and collector placement. More radios do not automatically mean complete reference capture; document the reference's own limits.
+Use the existing Pi/Kismet kit first, then add Pager with the intended GPS accessory for parity tests. See the [November 26 product plan](PRODUCT_PLAN_2026_11.md) and [GPS replay workflow](GPS_REPLAY.md). Record firmware, Kismet version and database schema, driver/chipset, enabled bands, channel schedule, device OS/model, phone settings, and collector placement. More radios do not automatically mean complete reference capture; document the reference's own limits.
 
 For participant ground truth, use a timestamped route log and known-device labels under consent. Keep identifying information outside public fixtures. Preserve original captures locally, derive sanitized replay fixtures, and retain a reproducible mapping only for the study. Do not upload route captures or encountered SSIDs to a service by default.
+
+Ground truth that a person passed the receiver is not ground truth that an unknown randomized address belongs to that person's phone. For associated devices, use a controlled AP's association records to establish the current private address. For unassociated scans, use an isolated single-device capture setup or device-side evidence where available. If the mapping cannot be established, mark it unknown; do not label every frame in a participant's time window as theirs. Keep ambiguous cases in the visibility accounting and out of claims about verified address-link precision. A second sniffer with the same channel gaps does not create complete ground truth.
 
 Record the observer's clock source and GPS time/fix quality. Synchronize independent collectors and measure drift. A location is usable for route inference only when its timestamp and accuracy satisfy the chosen rule; “last known fix” is not current position.
 
@@ -52,6 +54,8 @@ Use at least these routes:
 | Two separated appearances with a long gap | Intermittent visibility | First/last span mistaken for continuous presence |
 
 Freeze the proposed rules before evaluating held-out routes. Keep development and evaluation runs separate. Do not tune thresholds on every “test” result and then report that same set as independent evidence.
+
+Include a retention-pressure control: repeat a known persistent-radio route while adding many repetitive beacon observations. Compare an unpruned replay with the retained store. If the cap erases the minimum recurrence span or the earlier encounter, record that as a product failure even when every ingestion operation succeeded. Memory and decision-history requirements must pass together.
 
 ## Measures to publish
 

@@ -99,11 +99,20 @@ class Store:
         number(at, "at")
         known = [(r[0], r[1]) for r in self.db.execute("SELECT protocol, address FROM known")]
         rows = self.db.execute("""SELECT body FROM observations WHERE observed_at BETWEEN ? AND ?
-            ORDER BY observed_at, identity LIMIT 1000001""", (at - rules.window_seconds, at)).fetchall()
-        if len(rows) > 1000000:
-            raise ValueError("report exceeds one million observations; reduce the window or prune the store")
-        result = summarize((Observation.from_dict(json.loads(r[0])) for r in rows),
-                           at=at, rules=rules, ignored=[*known, *ignored])
+            ORDER BY observed_at, identity LIMIT 1000001""", (at - rules.window_seconds, at))
+
+        def observations():
+            for index, row in enumerate(rows):
+                if index >= 1000000:
+                    raise ValueError("report exceeds one million observations; reduce the window or prune the store")
+                yield Observation.from_dict(json.loads(row[0]))
+
+        try:
+            # Avoid keeping a second full window of JSON strings alongside the
+            # validated observations retained by the analysis engine.
+            result = summarize(observations(), at=at, rules=rules, ignored=[*known, *ignored])
+        finally:
+            rows.close()
         result["storage"] = self.status(at=at)
         return result
 

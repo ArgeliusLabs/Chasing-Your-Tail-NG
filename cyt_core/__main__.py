@@ -1,5 +1,6 @@
 """CLI for replay, Kismet ingestion, reports, and a local browser view."""
 import argparse
+from dataclasses import asdict
 import glob
 import json
 from pathlib import Path
@@ -38,8 +39,14 @@ def ignores(values):
 
 def analyze_options(parser):
     parser.add_argument("--at", type=float, help="UTC Unix seconds; default: current time")
-    parser.add_argument("--window-seconds", type=float, default=1200)
+    for name, default in asdict(Rules()).items():
+        value_type = int if name in ("min_buckets", "min_locations") else float
+        parser.add_argument("--" + name.replace("_", "-"), type=value_type, default=default)
     parser.add_argument("--ignore", action="append", default=[], metavar="PROTOCOL,MAC")
+
+
+def analysis_rules(args):
+    return Rules(**{name: getattr(args, name) for name in asdict(Rules())})
 
 
 def parser_for_cli():
@@ -48,6 +55,15 @@ def parser_for_cli():
     read = sub.add_parser("replay", help="analyze observation JSONL without creating a database")
     read.add_argument("input", type=Path)
     analyze_options(read)
+    tag = sub.add_parser("geotag", help="join a trip export to a recorded gpspipe JSON log")
+    tag.add_argument("input", type=Path)
+    tag.add_argument("--gps", required=True, type=Path)
+    tag.add_argument("--gps-device", required=True, help="exact device field in gpsd TPV records")
+    tag.add_argument("--session", required=True)
+    tag.add_argument("--observer", required=True)
+    tag.add_argument("--output", required=True, type=Path, help="new JSONL file; never overwrites")
+    tag.add_argument("--max-fix-age-seconds", type=float, default=5)
+    tag.add_argument("--max-accuracy-m", type=float, default=50)
     capture = sub.add_parser("ingest", help="read Kismet v11 packet databases once or follow rotating files")
     capture.add_argument("inputs", nargs="+", help="paths or quoted glob patterns")
     capture.add_argument("--session", required=True, help="trip/run name; reuse when restarting that run")
@@ -132,7 +148,7 @@ def collect(args, store):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    commands = {"replay", "ingest", "import-jsonl", "report", "status", "known", "prune", "export", "serve"}
+    commands = {"replay", "geotag", "ingest", "import-jsonl", "report", "status", "known", "prune", "export", "serve"}
     if argv and not argv[0].startswith("-") and argv[0] not in commands:
         argv.insert(0, "replay")  # Original prototype invocation remains valid.
     parser = parser_for_cli()
@@ -140,7 +156,33 @@ def main(argv=None):
     try:
         if args.command == "replay":
             output(summarize(replay(args.input), at=args.at if args.at is not None else time.time(),
-                             rules=Rules(window_seconds=args.window_seconds), ignored=ignores(args.ignore)))
+                             rules=analysis_rules(args), ignored=ignores(args.ignore)))
+            return 0
+        if args.command == "geotag":
+            from .gps import geotag, read_gps
+            if args.output.resolve() in (args.input.resolve(), args.gps.resolve()):
+                raise ValueError("geotag output must be separate from both inputs")
+            with args.gps.open(encoding="utf-8") as stream:
+                track = read_gps(stream, device=args.gps_device)
+            stats = {}
+            # Exclusive creation protects inputs and existing results. Remove
+            # only our new partial output on a failed join.
+            with args.output.open("x", encoding="utf-8", newline="\n") as destination:
+                try:
+                    for event in geotag(replay(args.input), track, session=args.session,
+                            observer=args.observer, max_age=args.max_fix_age_seconds,
+                            max_accuracy=args.max_accuracy_m, stats=stats):
+                        destination.write(json.dumps(asdict(event), allow_nan=False) + "\n")
+                except BaseException:
+                    destination.close()
+                    args.output.unlink()
+                    raise
+            output({"output": str(args.output), "gps_device": args.gps_device,
+                    "input": str(args.input), "gps_input": str(args.gps),
+                    "session": args.session, "observer": args.observer,
+                    "max_fix_age_seconds": args.max_fix_age_seconds, "max_accuracy_m": args.max_accuracy_m,
+                    "gps": track.stats, "join": stats,
+                    "error_estimate": "gpsd eph, or hypot(epx, epy); confidence is not guaranteed"})
             return 0
         if args.command == "ingest" and any(args.db.resolve() == Path(p).resolve()
                 for pattern in args.inputs for p in glob.glob(pattern)):
@@ -157,7 +199,7 @@ def main(argv=None):
                 output({"inserted": count, "removed": removed})
             elif args.command == "report":
                 output(store.report(at=args.at if args.at is not None else time.time(),
-                                    rules=Rules(window_seconds=args.window_seconds), ignored=ignores(args.ignore)))
+                                    rules=analysis_rules(args), ignored=ignores(args.ignore)))
             elif args.command == "status":
                 output(store.status(at=args.at))
             elif args.command == "known":

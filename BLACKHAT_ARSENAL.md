@@ -1,5 +1,7 @@
 # CYT - BlackHat Arsenal 2025
 
+> Historical presentation material. These feature and accuracy claims are not the specification or validation of the current runtime. Use the [current setup](SETUP.md), [product plan](docs/PRODUCT_PLAN_2026_11.md), and [legacy policy](docs/LEGACY.md). This file is retained for project history.
+
 ## Chasing Your Tail: Advanced Wi-Fi Surveillance Detection
 
 ### 🎯 BlackHat Arsenal Presentation Summary

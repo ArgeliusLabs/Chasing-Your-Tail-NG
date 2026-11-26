@@ -2,6 +2,8 @@
 
 Assessment date: November 3, 2026. Priority: portable awareness of recurring nearby radios.
 
+**Historical assessment:** implementation status and hardware research have advanced since this review. Use the [November 26 Pi-first product plan](PRODUCT_PLAN_2026_11.md) and [current runtime guide](RUNTIME.md) for present scope. Prices and stock observations below are dated snapshots.
+
 **CYT is worth continuing as a tool that records and explains recurring wireless observations along your route. The present NG implementation is not a dependable detector of people following you, and recovering a modern phone's remembered networks is not a viable primary product promise.** A small, offline Pager with GPS is technically plausible. Its value would be understandable evidence, reliable collection, and restrained alerts. Hardware cannot restore information that a phone does not transmit.
 
 There is an especially useful development: Kismet's current stable release is **2026-10-R1**, and the tagged source contains optional Wi-Fi randomized-address linking. This gives CYT an upstream experiment to evaluate rather than a reason to develop another identity-recovery engine. Keep inferred relationships visibly separate from exact-address observations. [Kismet downloads](https://www.kismetwireless.net/download/), [tagged configuration](https://github.com/kismetwireless/kismet/blob/kismet-2026-10-R1/conf/kismet_80211.conf).

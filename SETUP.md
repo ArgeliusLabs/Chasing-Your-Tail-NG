@@ -1,58 +1,34 @@
-# CYT Setup Guide
+# CYT setup
 
-## Quick Start for BlackHat Demo
+Start with the **experimental observation runtime**. Python 3.10 or newer is required. Development targets the existing Raspberry Pi kit first; a Pager port is a later hardware milestone.
 
-### 1. Install Dependencies
-```bash
-pip3 install -r requirements.txt
+From the repository root:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install --no-deps .
+.venv/bin/cyt replay research/example-route.jsonl --at 1200
 ```
 
-### 2. Security Setup (REQUIRED)
-```bash
-# Migrate credentials to secure storage
-python3 migrate_credentials.py
+This replay needs no radio, GPS, WiGLE account, or API key. The build may download setuptools. On Windows, use `python` and `.venv/Scripts/python` / `.venv/Scripts/cyt` instead.
 
-# Verify security hardening
-python3 chasing_your_tail.py
-# Should show: "🔒 SECURE MODE: All SQL injection vulnerabilities have been eliminated!"
+For capture, Kismet must already be running with compatible Wi-Fi hardware and packet logging enabled. CYT reads Kismet schema v11 captures; it does not install Kismet or configure radios.
+
+```sh
+.venv/bin/cyt ingest '/path/to/captures/*.kismet' --db cyt.sqlite3 --session trip-001 --observer pi-01 --follow
 ```
 
-### 3. Configuration
-Edit `config.json` with your Kismet database path:
-```json
-{
-  "kismet_db_path": "/path/to/your/kismet/*.kismet"
-}
+In another terminal:
+
+```sh
+.venv/bin/cyt serve --db cyt.sqlite3
 ```
 
-### 4. Run Analysis
-```bash
-# Start GUI interface
-python3 cyt_gui.py
+Open `http://127.0.0.1:8765`. For a remote Pi, use the SSH tunnel in the operator guide. A read-only local dashboard and recurrence reports are available; measured phone visibility, live GPS, notifications, and a supported Pi/Pager appliance remain release gates.
 
-# Or run surveillance analysis directly
-python3 surveillance_analyzer.py
+- [Installation, commands, retention and troubleshooting](docs/RUNTIME.md)
+- [Join an observer GPS log after a trip](docs/GPS_REPLAY.md)
+- [Pi-first product and validation plan](docs/PRODUCT_PLAN_2026_11.md)
+- [Legacy migration policy](docs/LEGACY.md)
 
-# For demo with simulated GPS data
-python3 surveillance_analyzer.py --demo
-```
-
-### 5. View Results
-- **Reports**: Check `surveillance_reports/` for markdown and HTML files
-- **Visualizations**: Open `.kml` files from `kml_files/` in Google Earth
-
-## BlackHat Arsenal Demo Features
-
-- ✅ **Spectacular KML Visualization** - Professional Google Earth integration
-- ✅ **Multi-format Reports** - Markdown, HTML, and KML outputs  
-- ✅ **Security Hardened** - SQL injection prevention, encrypted credentials
-- ✅ **GPS Integration** - Automatic coordinate extraction from Kismet
-- ✅ **Multi-location Tracking** - Detects devices following across locations
-- ✅ **Professional GUI** - Enhanced Tkinter interface with analysis buttons
-
-## Documentation
-- **README.md** - Complete user documentation
-- **CLAUDE.md** - Technical developer documentation
-
-## Support
-GitHub: https://github.com/matt0177/cyt
+The root `requirements.txt`, `config.json`, Tkinter UI, WiGLE credentials and `surveillance_*` scripts belong to the historical application. They are not prerequisites for the new runtime. The former BlackHat setup instructions and unsupported detection/security claims remain available in Git history for reference.

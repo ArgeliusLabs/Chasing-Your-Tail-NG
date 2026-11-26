@@ -56,7 +56,7 @@ def summarize(observations, *, at, rules=None, ignored=()):
                 continue
             valid_fixes += 1
             # Require separation beyond the stated uncertainty on both fixes.
-            if len(anchors) < max(32, rules.min_locations) and all(distance_m(pos, other) > rules.separation_m + pos.accuracy_m + other.accuracy_m
+            if len(anchors) < 32 and all(distance_m(pos, other) > rules.separation_m + pos.accuracy_m + other.accuracy_m
                    for other in anchors):
                 anchors.append(pos)
         recurring = len(buckets) >= rules.min_buckets and span >= rules.min_span_seconds
@@ -69,7 +69,7 @@ def summarize(observations, *, at, rules=None, ignored=()):
             "state": level, "observations": len(events), "time_buckets": len(buckets),
             "first_observed_at": events[0].observed_at, "last_observed_at": events[-1].observed_at,
             "span_seconds": span, "distinct_observer_locations": len(anchors),
-            "observer_location_count_capped": len(anchors) == max(32, rules.min_locations),
+            "observer_location_count_capped": len(anchors) == 32,
             "observations_with_usable_position": valid_fixes,
             "observation_kinds": sorted({e.kind for e in events}),
             "directed_ssids": sorted({e.ssid for e in events if e.kind == "probe" and e.ssid}),

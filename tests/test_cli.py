@@ -32,6 +32,20 @@ class ReplayCLITests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stdout, "")
 
+    def test_explicit_rules_change_threshold_and_are_reported(self):
+        args = ["replay", "research/example-route.jsonl", "--at", "1200"]
+        result = self.run_cli(*args, "--min-buckets", "4", "--bucket-seconds", "30.5",
+                              "--min-span-seconds", "100.5", "--min-locations", "4",
+                              "--separation-m", "400", "--max-fix-age-seconds", "2", "--max-accuracy-m", "10")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report["results"][0]["state"], "observed")
+        self.assertEqual(report["rules"]["bucket_seconds"], 30.5)
+        self.assertEqual(report["rules"]["min_locations"], 4)
+        self.assertEqual(self.run_cli(*args, "--min-buckets", "1").returncode, 2)
+        self.assertEqual(self.run_cli(*args, "--min-locations", "33").returncode, 2)
+        self.assertEqual(self.run_cli(*args, "--separation-m", "nan").returncode, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
