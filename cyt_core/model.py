@@ -132,3 +132,5 @@ class Rules:
         for name in ("min_buckets", "min_locations"):
             if type(getattr(self, name)) is not int or getattr(self, name) < 2:
                 raise ValueError(f"{name} must be an integer of at least 2")
+        if self.min_locations > 32:
+            raise ValueError("min_locations cannot exceed the 32-anchor analysis limit")

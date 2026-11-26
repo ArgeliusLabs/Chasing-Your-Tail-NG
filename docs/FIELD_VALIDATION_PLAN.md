@@ -19,7 +19,7 @@ This plan decides whether a portable CYT release is useful and whether its claim
 
 ## Equipment and records
 
-Use a Pager with the intended GPS accessory and a Pi/Kismet reference installation with known compatible receivers. Record firmware, Kismet version and database schema, driver/chipset, enabled bands, channel schedule, device OS/model, phone settings, and collector placement. More radios do not automatically mean complete reference capture; document the reference's own limits.
+Use the existing Pi/Kismet kit first, then add Pager with the intended GPS accessory for parity tests. See the [November 26 product plan](PRODUCT_PLAN_2026_11.md) and [GPS replay workflow](GPS_REPLAY.md). Record firmware, Kismet version and database schema, driver/chipset, enabled bands, channel schedule, device OS/model, phone settings, and collector placement. More radios do not automatically mean complete reference capture; document the reference's own limits.
 
 For participant ground truth, use a timestamped route log and known-device labels under consent. Keep identifying information outside public fixtures. Preserve original captures locally, derive sanitized replay fixtures, and retain a reproducible mapping only for the study. Do not upload route captures or encountered SSIDs to a service by default.
 

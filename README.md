@@ -2,7 +2,7 @@
 
 CYT reports recurring nearby **advertised radio identifiers**. Modern phones often send wildcard probes and change addresses. CYT counts observed transmissions without requiring remembered network names and keeps changing addresses separate.
 
-The repository now includes a Kismet packet adapter, persistent storage, a CLI, and a local browser dashboard, merged in [PR #38](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/pull/38). It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. The original scripts remain separate. Follow the [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) for the remaining work.
+The repository includes a Kismet packet adapter, persistent storage, a CLI, a local browser dashboard, and post-trip GPS joins. It is an **experimental alpha**, with synthetic software tests and no completed Pi/Pager field validation. **The existing Raspberry Pi kit is the first deployment target, followed by Pager.** Read the [current product plan](docs/PRODUCT_PLAN_2026_11.md) and [rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37). The original scripts remain separate under the [legacy migration policy](docs/LEGACY.md).
 
 ## Try it without hardware
 
@@ -48,22 +48,26 @@ Use paths for your machine. Quote the glob so newly rotated files can be discove
 - Stores observations in a separate SQLite database, with a configurable row cap and follow-mode age retention.
 - Persists normalized known-address exclusions through `cyt known` commands.
 - Produces JSON reports and JSONL exports; displays results in a small local dashboard.
+- Joins a recorded observer GPS log to a trip export with explicit source, timestamp and quality checks.
+- Exposes time-bin, span, location-separation and fix-quality thresholds for report/replay experiments.
 
 The output labels are `observed`, `recurring`, and `recurring_across_locations`. Positions describe where the observer heard a transmission. Recurrence does not prove device identity, a person's identity, intent, or following. An empty display does not establish safety or complete capture coverage.
 
-**GPS and BLE:** validated positions and BLE observations can be supplied through JSONL. The Kismet adapter currently ingests Wi-Fi packets only and supplies no qualified GPS fixes: its packet table lacks the fix time and accuracy needed by CYT's route rules. Live GPS integration, BLE capture, and Pager deployment remain work to do.
+**GPS and BLE:** validated positions and BLE observations can be supplied through JSONL. The Kismet adapter currently ingests Wi-Fi packets only and supplies no qualified GPS fixes: its packet table lacks the fix time and accuracy needed by CYT's route rules. The new [GPS replay workflow](docs/GPS_REPLAY.md) uses a separately recorded gpsd log after a trip. Live GPS integration, BLE capture, notifications, and Pager deployment remain work to do.
 
 ## Development and evidence
 
 | Resource | Purpose |
 | --- | --- |
 | [Runtime guide](docs/RUNTIME.md) | Installation, commands, storage, source contract, troubleshooting, and limits |
-| [Capability assessment](docs/CYT_2026_ASSESSMENT.md) | Phone privacy behavior, legacy audit, hardware feasibility, and product direction |
+| [Current product plan](docs/PRODUCT_PLAN_2026_11.md) | Signal priorities, Pi/Pager milestones, research questions, product and fulfillment decisions |
+| [GPS replay guide](docs/GPS_REPLAY.md) | Record GPS, reject unusable fixes, join and review a trip |
+| [Earlier capability assessment](docs/CYT_2026_ASSESSMENT.md) | November 3 legacy audit and original feasibility research |
 | [Field validation plan](docs/FIELD_VALIDATION_PLAN.md) | Radio, GPS, route, nuisance-alert, and endurance checks |
 | [Earlier core design](docs/REFRACTOR_NOTES.md) | Original replay milestone and migration rationale |
 | [Rewrite tracker](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/issues/37) | Community requirements and remaining release gates |
 
-All 53 tests and the installation smoke checks passed on Windows and Linux with Python 3.10 and 3.13 for the merged runtime ([CI run](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/runs/41714526125)). The tests use synthetic captures, including active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, and HTTP behavior. They do not measure RF detection performance.
+The software suite covers synthetic captures, active SQLite WAL writes, restart, rollback, rotation, duplicate input, retention, event-time windows, HTTP behavior and conservative GPS joins. Run `python -B research/evaluate_route_cases.py` for eleven route-policy examples, including a silent phone, address changes, companions and fixed APs. These checks do not measure RF detection performance. See [GitHub Actions](https://github.com/ArgeliusLabs/Chasing-Your-Tail-NG/actions/workflows/core-tests.yml) for checks on each revision.
 
 ## Legacy code and contributions
 

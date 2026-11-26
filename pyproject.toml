@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chasing-your-tail-core"
-version = "0.2.0a1"
+version = "0.2.0a2"
 description = "Passive observation storage and recurrence reports for CYT"
 readme = "README.md"
 requires-python = ">=3.10"

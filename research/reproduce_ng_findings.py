@@ -105,8 +105,11 @@ def main():
         assert output.getvalue() == ""
         results["lowercase_recurrence_missed"] = True
 
-        config = json.loads((ROOT / "config.json").read_text())
-        missing = [name for name in config["paths"]["ignore_lists"].values()
+        # Baseline config before the Nov 26 cleanup (community PR #10).
+        # Preserve the historical reproduction without asserting that today's
+        # corrected configuration still contains the original typo.
+        baseline_ignore_files = ["mac_list.py", "ssid_list.py"]
+        missing = [name for name in baseline_ignore_files
                    if not (ROOT / "ignore_lists" / name).exists()]
         assert sorted(missing) == ["mac_list.py", "ssid_list.py"]
         results["configured_ignore_files_missing"] = missing

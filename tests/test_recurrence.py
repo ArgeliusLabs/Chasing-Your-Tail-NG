@@ -45,7 +45,7 @@ class RecurrenceTests(unittest.TestCase):
         self.assertEqual(result["time_buckets"], 3)
         self.assertEqual(result["state"], "observed")
 
-    def test_stationary_radio_never_gets_route_label(self):
+    def test_stationary_observer_never_gets_route_label(self):
         events = [observation(t, kind="beacon", ssid=None, position=Position(33, -112, t, 5))
                   for t in (1000, 1100, 1200)]
         result = summarize(events, at=1200)["results"][0]

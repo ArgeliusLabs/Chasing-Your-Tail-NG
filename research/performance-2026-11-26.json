@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-26",
+  "baseline_report_commit": "d73dc6dff498f679896b099007b5ada16c0918d4",
+  "hardware_test": false,
+  "benchmarks": [
+    {
+      "case": "10k-100",
+      "before_streaming": {
+        "synthetic": true,
+        "events": 10000,
+        "identifiers": 100,
+        "repeats": 3,
+        "seed_seconds": 0.3005958000430837,
+        "report_seconds": [
+          0.1465576000045985,
+          0.14391920005436987,
+          0.14256249996833503
+        ],
+        "report_median_seconds": 0.14391920005436987,
+        "report_python_peak_bytes": 14118727,
+        "store_bytes": 6152192,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      },
+      "after_streaming": {
+        "synthetic": true,
+        "events": 10000,
+        "identifiers": 100,
+        "repeats": 3,
+        "seed_seconds": 0.29399959999136627,
+        "report_seconds": [
+          0.15557890001218766,
+          0.15135709999594837,
+          0.15016520000062883
+        ],
+        "report_median_seconds": 0.15135709999594837,
+        "report_python_peak_bytes": 8907446,
+        "store_bytes": 6152192,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      }
+    },
+    {
+      "case": "100k-1k",
+      "before_streaming": {
+        "synthetic": true,
+        "events": 100000,
+        "identifiers": 1000,
+        "repeats": 3,
+        "seed_seconds": 4.9814111000159755,
+        "report_seconds": [
+          3.467835000017658,
+          3.550377499894239,
+          3.5916156000457704
+        ],
+        "report_median_seconds": 3.550377499894239,
+        "report_python_peak_bytes": 143698059,
+        "store_bytes": 61612032,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      },
+      "after_streaming": {
+        "synthetic": true,
+        "events": 100000,
+        "identifiers": 1000,
+        "repeats": 3,
+        "seed_seconds": 4.765269099967554,
+        "report_seconds": [
+          3.8317739999620244,
+          3.837198800058104,
+          3.8246553000062704
+        ],
+        "report_median_seconds": 3.8317739999620244,
+        "report_python_peak_bytes": 91336018,
+        "store_bytes": 61612032,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      }
+    },
+    {
+      "case": "100k-100k",
+      "before_streaming": {
+        "synthetic": true,
+        "events": 100000,
+        "identifiers": 100000,
+        "repeats": 3,
+        "seed_seconds": 5.128540400066413,
+        "report_seconds": [
+          4.047441800008528,
+          4.151023100013845,
+          4.015181099995971
+        ],
+        "report_median_seconds": 4.047441800008528,
+        "report_python_peak_bytes": 258940308,
+        "store_bytes": 61612032,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      },
+      "after_streaming": {
+        "synthetic": true,
+        "events": 100000,
+        "identifiers": 100000,
+        "repeats": 3,
+        "seed_seconds": 4.809817500063218,
+        "report_seconds": [
+          4.297605899977498,
+          4.357441200059839,
+          4.418822099920362
+        ],
+        "report_median_seconds": 4.357441200059839,
+        "report_python_peak_bytes": 206578171,
+        "store_bytes": 61612032,
+        "python": "3.13.11",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
+      }
+    }
+  ]
+}

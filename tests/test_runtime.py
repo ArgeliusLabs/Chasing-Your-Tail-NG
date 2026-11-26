@@ -39,6 +39,8 @@ class RuntimeTests(unittest.TestCase):
         report_args = ["report", "--db", self.db, "--at", "1200", "--window-seconds", "1200"]
         result = json.loads(self.run_cli(*report_args).stdout)
         self.assertEqual(result["results"][0]["state"], "recurring")
+        changed = json.loads(self.run_cli(*report_args, "--min-buckets", "4").stdout)
+        self.assertEqual(changed["results"][0]["state"], "observed")
         self.run_cli("known", "add", "--db", self.db, "--protocol", "wifi", "--address", "02:00:00:00:00:01")
         self.assertEqual(json.loads(self.run_cli(*report_args).stdout)["observed_identifiers"], 0)
         exported = self.run_cli("export", "--db", self.db)
