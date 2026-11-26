@@ -58,6 +58,8 @@ Example proposed copy: **“Radio seen again: 3 observation areas over 8 minutes
 
 Reuse the actual Pi, supported monitor-mode Wi-Fi adapter, GPS receiver and battery already available. The exact Pi model, adapter chipset, driver, OS and GPS model have not been confirmed in this review; do not buy replacements based on an assumed inventory. Start on 2.4/5 GHz only if the existing adapter supports them reliably. Test a second receiver or 6 GHz only when measured coverage justifies the added power and scheduling complexity.
 
+There is another potentially useful recovery path for existing hardware: Kismet's October 2026 USB userspace capture source supports selected MediaTek and Realtek adapters without relying on the host's normal Wi-Fi kernel driver. That may help an older Pi installation with a troublesome driver. Verify the exact chipset, USB permissions, power and shipped Kismet build; the documentation distinguishes tested devices from ones using similar untested driver code. Treat this as a bench option before buying another adapter, not a compatibility promise. [Kismet USB userspace capture](https://www.kismetwireless.net/docs/readme/datasources/wifi-usb-userspace/).
+
 Keep Kismet responsible for radio collection, gpsd for the receiver, and CYT for normalized events, storage, analysis and presentation. Each service should have a visible health state. A working management connection does not prove the capture radio is listening to the required channel.
 
 The software now offers:
@@ -85,9 +87,19 @@ There is already a native mapping/wardriving payload, **NetRider**, whose curren
 
 Existing independent CYT Pager projects also mean that “CYT on a Pager” alone is not a novel claim. The earlier assessment reviews them; their code was not copied. Recheck licenses before any reuse. Different capture implementations must pass the same replay contract, even when their front ends differ.
 
+| Existing project | Lesson for CYT | Boundary |
+| --- | --- | --- |
+| [pineapple_pager_cyt](https://github.com/pineapple-pager-projects/pineapple_pager_cyt) | On-device list, controls, headless operation and vibration are already demonstrated in another implementation | Its threat-score and clustering interface does not validate identity or intent; no root license was reported by GitHub on this review date |
+| [chasing-your-tail-pager](https://github.com/tschakram/chasing-your-tail-pager) | Compare lifecycle and radio integration against our adapter contract | Verify actual receive-only behavior; do not equate a project's passive description with measured radio behavior; no root license was reported by GitHub on this review date |
+| [AirGuard](https://github.com/seemoo-lab/AirGuard) | Study unwanted-tracker UX, known-device exclusions and notification cooldown | Android tracker application, not a generic Wi-Fi identity detector or a Pager drop-in; published under Apache-2.0 |
+
+The two Pager repositories had no newer pushes than the versions examined in the earlier assessment. AirGuard's [reviewed notification worker](https://github.com/seemoo-lab/AirGuard/blob/d515c534be7aac370de33e7bae0136a7b995e0cf/app/src/main/java/de/seemoo/at_tracking_detection/detection/TrackingDetectorWorker.kt) uses observation duration, location count, exclusions and notification spacing. Those are useful design references, not thresholds to transplant into a different receiver and radio population. Its implementation was read for comparison; no code was copied.
+
 Proposed Pager screen: session/GPS/capture state at the top, up to five recent recurrence entries, and one-button details/acknowledgement. Store bounded recent events and export older trips. Test a conservative event cap first instead of copying the desktop maximum. No desktop toolkit, dataframe stack, machine-learning runtime or internet map dependency belongs in the first appliance.
 
 There is now a measured software reason for that cap: a 100,000-event synthetic report with 1,000 identifiers dropped from about 144 MB to 91 MB of traced Python allocations after removing a duplicate in-memory JSON window. With 100,000 distinct identifiers it still used about 207 MB. These desktop figures exclude some native memory and are not Pager RAM measurements. The [validation report and reproducible benchmark](SOFTWARE_VALIDATION_2026_11.md) make the remaining constraint explicit.
+
+**Do not solve memory by shrinking history until recurrence becomes impossible.** Approximate retained history is row cap divided by accepted rows per second. At 100 rows/second, a 10,000-row cap holds about 100 seconds, less than the default 120-second minimum span; a busy beacon environment can therefore erase the earlier encounter before a report qualifies. The next storage milestone must measure this tradeoff and retain compact per-address/time/location evidence separately from bounded raw metadata. Keep counts, first/last source times and provenance to the original capture; do not relabel summaries as fresh packet observations. Compare summary-based results against unpruned replay before enabling that path. A smaller buffer alone is not a usable Pager design.
 
 ## Milestones and exit evidence
 
@@ -97,7 +109,7 @@ These are work packages and proposed acceptance criteria, not promised calendar 
 | --- | --- | --- |
 | 0 — repository reset | Current setup, one core, migration policy, triaged backlog, research and reproducible counterexamples | Automated tests and installation checks; legacy claims clearly separated |
 | 1 — Pi capture truth | Known kit inventory; real per-frame timestamps and source/band checks; simultaneous GPS log | Every supported frame kind has a sanitized real fixture; empty probes survive end to end; drift and loss recorded |
-| 2 — Pi route pilot | Live GPS/health, exact-address encounter review, replayable route dataset | Held-out controls and known-radio routes; nuisance rate, visibility, continuity and latency published separately |
+| 2 — Pi route pilot | Live GPS/health, retained-history diagnostics, compact evidence design, exact-address encounter review, replayable route dataset | Busy-scene retention preserves the intended decision window; held-out controls and known-radio routes publish nuisance rate, visibility, continuity and latency separately |
 | 3 — Pager parity | Pinned firmware adapter, compact UI/haptics, storage limits, recovery/export | Same observations produce same engine results; actual CPU/RAM/backlog/flash and GPS behavior measured |
 | 4 — paid pilot | Reproducible installation, update/rollback, support process, provisioned unit checklist | Another person sets up/updates/recovers it; full intended session endurance passes; fulfillment terms confirmed |
 

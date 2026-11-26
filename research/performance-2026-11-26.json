@@ -120,5 +120,18 @@
         "limitations": "Synthetic desktop/Pi/Pager-local report benchmark; traced Python allocations are not process RSS, and no RF accuracy or battery claim is measured."
       }
     }
-  ]
+  ],
+  "retention_horizon_check": {
+    "synthetic": true,
+    "source": "running baseline soak",
+    "accepted_rows_per_second_nominal": 100,
+    "retained": 5000,
+    "retained_span_seconds": 49.00009894371033,
+    "identifier_count": 100,
+    "states": [
+      "observed"
+    ],
+    "largest_identifier_span_seconds": 49.0,
+    "required_span_seconds": 120
+  }
 }

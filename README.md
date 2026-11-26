@@ -62,6 +62,7 @@ The output labels are `observed`, `recurring`, and `recurring_across_locations`.
 | [Runtime guide](docs/RUNTIME.md) | Installation, commands, storage, source contract, troubleshooting, and limits |
 | [Current product plan](docs/PRODUCT_PLAN_2026_11.md) | Signal priorities, Pi/Pager milestones, research questions, product and fulfillment decisions |
 | [GPS replay guide](docs/GPS_REPLAY.md) | Record GPS, reject unusable fixes, join and review a trip |
+| [Software validation](docs/SOFTWARE_VALIDATION_2026_11.md) | Reproducible memory, retention and sustained-ingestion evidence |
 | [Earlier capability assessment](docs/CYT_2026_ASSESSMENT.md) | November 3 legacy audit and original feasibility research |
 | [Field validation plan](docs/FIELD_VALIDATION_PLAN.md) | Radio, GPS, route, nuisance-alert, and endurance checks |
 | [Earlier core design](docs/REFRACTOR_NOTES.md) | Original replay milestone and migration rationale |

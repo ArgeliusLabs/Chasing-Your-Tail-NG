@@ -1,0 +1,3 @@
+{"session":"synthetic-demo","observer":"pi-01","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1000,"kind":"probe","ssid":""}
+{"session":"synthetic-demo","observer":"pi-01","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1100,"kind":"probe","ssid":""}
+{"session":"synthetic-demo","observer":"pi-01","protocol":"wifi","address":"02:00:00:00:00:01","observed_at":1200,"kind":"probe","ssid":""}

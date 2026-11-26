@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-26",
+  "synthetic": true,
+  "hardware_test": false,
+  "python": "3.13.11",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "runs": [
+    {
+      "name": "baseline",
+      "runtime_commit": "d73dc6dff498f679896b099007b5ada16c0918d4",
+      "started_at": 1795711355.0398116,
+      "ended_at": 1795714955.6673422,
+      "elapsed_seconds": 3600.6548697000835,
+      "iterations": 3599,
+      "records_written": 359900,
+      "records_inserted": 359900,
+      "records_removed": 354900,
+      "retained": 5000,
+      "capture_files": 30,
+      "restart_checks": 11,
+      "duplicate_checks": 120,
+      "ingest_pass_median_seconds": 0.1447189999744296,
+      "ingest_pass_p95_seconds": 0.23564289999194443,
+      "report_median_seconds": 0.4728272000211291,
+      "report_p95_seconds": 0.4872905999654904,
+      "traced_heap_peak_bytes": 7813331,
+      "result": "passed",
+      "hardware_test": false
+    },
+    {
+      "name": "streamed_report",
+      "runtime_commit": "1fdcb2cc13ef08d36673c6f06c64315259a39ce3",
+      "started_at": 1795713177.2058506,
+      "ended_at": 1795714377.674652,
+      "elapsed_seconds": 1200.4775694999844,
+      "iterations": 1200,
+      "records_written": 120000,
+      "records_inserted": 120000,
+      "records_removed": 115000,
+      "retained": 5000,
+      "capture_files": 10,
+      "restart_checks": 3,
+      "duplicate_checks": 40,
+      "ingest_pass_median_seconds": 0.0704361000098288,
+      "ingest_pass_p95_seconds": 0.10253570007625967,
+      "report_median_seconds": 0.4577880000579171,
+      "report_p95_seconds": 0.4905060000019148,
+      "traced_heap_peak_bytes": 5083326,
+      "result": "passed",
+      "hardware_test": false
+    }
+  ]
+}

@@ -4,6 +4,17 @@ The `geotag` command adds **observer** positions to a JSONL export using a recor
 
 Use the existing Pi/Kismet kit first. A receiver must already be working with gpsd. The official [gpspipe guide](https://gpsd.gitlab.io/gpsd/gpspipe.html) documents `-w` for JSON and `-B` for unbuffered output. Its [JSON contract](https://gpsd.gitlab.io/gpsd/gpsd_json.html) describes TPV timestamps, fix modes, optional fields, and estimated errors.
 
+## Try the join without hardware
+
+From the repository root, these explicitly synthetic fixtures demonstrate a complete join and replay:
+
+```sh
+python -B -m cyt_core geotag research/example-unlocated-route.jsonl --gps research/example-gps.jsonl --gps-device synthetic-gps --session synthetic-demo --observer pi-01 --output demo-observations-gps.jsonl
+python -B -m cyt_core replay demo-observations-gps.jsonl --at 1200
+```
+
+The join should attach three positions; replay should report one address recurring across three observer locations. The timestamps are deliberately historical and the observations are not live radio data. The command refuses to replace an existing output; choose a new output name on a repeat run.
+
 ## One trip, one observer, one receiver
 
 These examples use a Linux shell and a directory outside the repository. Choose a new trip directory; do not overwrite an earlier recording.
